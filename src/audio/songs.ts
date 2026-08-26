@@ -102,44 +102,6 @@ const workSong: Song = {
   ],
 };
 
-// ── Blog: Thoughtful, jazzy (G major, 72 BPM) ───────────────────────
-
-const blogSong: Song = {
-  name: 'blog',
-  bpm: 72,
-  tracks: [
-    {
-      instrument: SINE_LEAD,
-      volume: 0.25,
-      pattern: [
-        [G4,4], [R,4], [B4,4], [D5,4],
-        [E5,6], [D5,2], [B4,4], [R,4],
-        [A4,4], [G4,4], [R,4], [B4,4],
-        [C5,4], [D5,8], [R,4],
-        [E5,4], [R,4], [G5,4], [D5,4],
-        [B4,8], [G4,4], [R,4],
-      ],
-    },
-    {
-      instrument: BASS,
-      volume: 0.3,
-      pattern: [
-        [G2,8], [D3,8],
-        [C3,8], [G2,8],
-        [E2,8], [B2,8],
-        [C3,8], [D3,8],
-      ],
-    },
-    {
-      instrument: PAD,
-      volume: 0.15,
-      pattern: [
-        [G3,16], [C4,16],
-        [D4,16], [G3,16],
-      ],
-    },
-  ],
-};
 
 // ── Books: Peaceful, classical (F major, 60 BPM) ────────────────────
 
@@ -380,157 +342,30 @@ const gamesSong: Song = {
   ],
 };
 
-// ── Climbing: Rock, intense (A minor, 130 BPM) ──────────────────────
-
-const climbingSong: Song = {
-  name: 'climbing',
-  bpm: 130,
-  tracks: [
-    {
-      instrument: SAW_LEAD,
-      volume: 0.25,
-      pattern: [
-        [A4,4], [C5,4], [D5,2], [E5,2], [R,4],
-        [E5,4], [D5,4], [C5,4], [A4,4],
-        [G4,2], [A4,2], [C5,4], [E5,4], [G5,4],
-        [E5,4], [D5,4], [A4,8],
-        [R,4], [A4,2], [C5,2], [D5,4], [E5,4],
-        [G5,4], [E5,4], [D5,4], [C5,4],
-      ],
-    },
-    {
-      instrument: POWER_BASS,
-      volume: 0.35,
-      pattern: [
-        [A2,2], [R,2], [A2,2], [R,2], [A2,2], [R,2], [G2,2], [R,2],
-        [F2,2], [R,2], [F2,2], [R,2], [E2,4], [R,4],
-        [A2,2], [R,2], [A2,2], [R,2], [C3,2], [R,2], [D3,2], [R,2],
-        [E2,4], [R,4], [A2,4], [R,4],
-      ],
-    },
-    {
-      instrument: PAD,
-      volume: 0.1,
-      pattern: [
-        [A3,16], [F3,16],
-        [E3,16], [A3,16],
-      ],
-    },
-  ],
-};
-
-// ── Pets: Playful, bouncy (F major, 105 BPM) ────────────────────────
-
-const petsSong: Song = {
-  name: 'pets',
-  bpm: 105,
-  tracks: [
-    {
-      instrument: SINE_LEAD,
-      volume: 0.3,
-      pattern: [
-        [F4,2], [A4,2], [C5,4], [A4,2], [F4,2],
-        [G4,4], [A4,4], [Bb4,4], [R,4],
-        [C5,2], [D5,2], [C5,2], [Bb4,2], [A4,4],
-        [G4,4], [F4,4], [R,4], [R,4],
-        [A4,2], [Bb4,2], [C5,4], [D5,4],
-        [C5,4], [Bb4,4], [A4,4], [F4,4],
-      ],
-    },
-    {
-      instrument: BASS,
-      volume: 0.3,
-      pattern: [
-        [F2,4], [F2,4], [C3,4], [C3,4],
-        [Bb2,4], [Bb2,4], [F2,4], [R,4],
-        [F2,4], [A2,4], [Bb2,4], [C3,4],
-        [F2,8], [R,8],
-      ],
-    },
-    {
-      instrument: ARP,
-      volume: 0.12,
-      pattern: [
-        [F5,2], [A5,2], [C5,2], [A5,2],
-        [F5,2], [R,2], [A5,2], [C5,2],
-        [Bb4,2], [D5,2], [F5,2], [R,2],
-        [C5,2], [F5,2], [A5,2], [R,2],
-      ],
-    },
-  ],
-};
-
-// ── Euler: Mathematical, clean (C Pythagorean, 66 BPM) ──────────────
-// Fibonacci-inspired intervals between notes: 1,1,2,3,5,8...semitones
-
-const eulerSong: Song = {
-  name: 'euler',
-  bpm: 66,
-  tracks: [
-    {
-      instrument: SINE_LEAD,
-      volume: 0.2,
-      pattern: [
-        // Fibonacci intervals from C4: +1, +1, +2, +3, +5, +8 semitones
-        [C4,8], [R,4], [D4,8], [R,4],
-        [E4,8], [R,8],
-        [G4,8], [R,4], [C5,8], [R,4],
-        [R,8], [E4,8],
-        [G4,8], [R,8],
-        [C4,8], [R,8],
-      ],
-    },
-    {
-      instrument: BASS,
-      volume: 0.2,
-      pattern: [
-        [C2,16], [G2,16],
-        [E2,16], [C2,16],
-      ],
-    },
-    {
-      instrument: PAD,
-      volume: 0.1,
-      pattern: [
-        [C3,16], [G3,16],
-        [E3,16], [C3,16],
-      ],
-    },
-  ],
-};
 
 // ── Path mapping ─────────────────────────────────────────────────────
 
 const songs: Record<string, Song> = {
   home: homeSong,
   work: workSong,
-  blog: blogSong,
   books: booksSong,
   music: musicSong,
   movies: moviesSong,
   tv: tvSong,
   anime: animeSong,
   games: gamesSong,
-  climbing: climbingSong,
-  pets: petsSong,
-  euler: eulerSong,
 };
 
 const pathSongMap: [RegExp, string][] = [
   [/^\/$/, 'home'],
   [/^\/work/, 'work'],
   [/^\/projects/, 'work'],
-  [/^\/blog/, 'blog'],
-  [/^\/papers/, 'blog'],
   [/^\/books/, 'books'],
   [/^\/music/, 'music'],
   [/^\/movies/, 'movies'],
   [/^\/tv/, 'tv'],
   [/^\/anime/, 'anime'],
   [/^\/games/, 'games'],
-  [/^\/climbing/, 'climbing'],
-  [/^\/pets/, 'pets'],
-  [/^\/euler/, 'euler'],
 ];
 
 export function getSongKeyForPath(pathname: string): string {

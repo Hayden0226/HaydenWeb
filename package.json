@@ -1,10 +1,9 @@
 {
-  "name": "atyansh-website",
+  "name": "hayden-web",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "prebuild": "node scripts/pull-secrets.cjs && node scripts/refresh-tokens.cjs",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",

@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://atyansh.com/sitemap-index.xml
-Sitemap: https://atyansh.com/sitemap-0.xml
+Sitemap: https://haydenweb.com/sitemap-index.xml
