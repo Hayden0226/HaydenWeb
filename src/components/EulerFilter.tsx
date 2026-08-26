@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+const base = import.meta.env.BASE_URL;
 import MediaFilterGrid, { type MediaFilterGridConfig } from './MediaFilterGrid';
 import ErrorBoundary from './ErrorBoundary';
 
@@ -60,7 +61,7 @@ function EulerFilterInner({ problems }: EulerFilterProps) {
     },
     renderItem: (problem) => (
       <motion.a
-        href={`/euler/${problem.problemNumber}`}
+        href={`${base}euler/${problem.problemNumber}`}
         className="block p-6 rounded-lg shadow-md border"
         style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
         whileHover={{ scale: 1.02, y: -5 }}

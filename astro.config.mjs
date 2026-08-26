@@ -8,6 +8,7 @@ import mdx from '@astrojs/mdx';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://haydenweb.com',
+  base: process.env.SITE_BASE || '/',
   integrations: [react(), mdx(), sitemap()],
   server: {
     host: true, // Allow access from local network

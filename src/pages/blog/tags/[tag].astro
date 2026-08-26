@@ -23,6 +23,7 @@ export async function getStaticPaths() {
 }
 
 const { tag, posts } = Astro.props;
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout
@@ -32,7 +33,7 @@ const { tag, posts } = Astro.props;
   <div class="max-w-4xl mx-auto">
     <header class="mb-8">
       <a
-        href="/blog"
+        href={base + "/blog"}
         class="inline-flex items-center gap-2 mb-4 hover:underline"
         style="color: var(--accent);"
       >

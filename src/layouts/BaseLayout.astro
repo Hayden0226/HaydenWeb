@@ -29,6 +29,7 @@ if (image) {
   });
   ogImageURL = new URL(`/og-image.png?${ogParams.toString()}`, Astro.site);
 }
+const base = import.meta.env.BASE_URL;
 ---
 
 <!DOCTYPE html>
@@ -62,7 +63,7 @@ if (image) {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageURL} />
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href={base + "/favicon.svg"} />
     <title>{title}</title>
 
     <!-- View Transitions for smooth page navigation -->
@@ -156,15 +157,15 @@ if (image) {
     <header class="header-no-backdrop shadow-sm border-b" style="background-color: var(--bg-card); border-color: var(--border);" role="banner">
       <nav class="container mx-auto px-4 py-4" role="navigation" aria-label="Main navigation">
         <div class="flex items-center justify-between">
-          <a href="/" class="accent-link text-2xl font-bold transition-colors rounded whitespace-nowrap" style="color: var(--accent); outline-color: var(--accent);" aria-label="Hayden - Home">
+          <a href={base + "/"} class="accent-link text-2xl font-bold transition-colors rounded whitespace-nowrap" style="color: var(--accent); outline-color: var(--accent);" aria-label="Hayden - Home">
             Hayden
           </a>
 
           <!-- Desktop Navigation -->
           <div class="hidden lg:flex items-center gap-6">
             <ul class="flex items-center gap-5 text-sm font-medium" role="list">
-              <li><a href="/" class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to home page">Home</a></li>
-              <li><a href="/work" class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to projects page">Projects</a></li>
+              <li><a href={base + "/"} class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to home page">Home</a></li>
+              <li><a href={base + "/work"} class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to projects page">Projects</a></li>
 
               <!-- Media Dropdown -->
               <li class="nav-dropdown relative">
@@ -175,18 +176,18 @@ if (image) {
                   </svg>
                 </button>
                 <ul class="nav-dropdown-menu absolute left-0 top-full mt-1 py-2 rounded-lg shadow-lg border min-w-[140px] opacity-0 invisible transition-all duration-200 z-50" style="background-color: var(--bg-primary); border-color: var(--border);">
-                  <li><a href="/books" class="nav-link block px-4 py-2 transition-colors">Books</a></li>
-                  <li><a href="/music" class="nav-link block px-4 py-2 transition-colors">Music</a></li>
-                  <li><a href="/movies" class="nav-link block px-4 py-2 transition-colors">Movies</a></li>
-                  <li><a href="/tv" class="nav-link block px-4 py-2 transition-colors">TV</a></li>
-                  <li><a href="/anime" class="nav-link block px-4 py-2 transition-colors">Anime</a></li>
+                  <li><a href={base + "/books"} class="nav-link block px-4 py-2 transition-colors">Books</a></li>
+                  <li><a href={base + "/music"} class="nav-link block px-4 py-2 transition-colors">Music</a></li>
+                  <li><a href={base + "/movies"} class="nav-link block px-4 py-2 transition-colors">Movies</a></li>
+                  <li><a href={base + "/tv"} class="nav-link block px-4 py-2 transition-colors">TV</a></li>
+                  <li><a href={base + "/anime"} class="nav-link block px-4 py-2 transition-colors">Anime</a></li>
                 </ul>
               </li>
 
-              <li><a href="/games" class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to games page">Games</a></li>
-              <li><a href="/photography" class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to photography page">Photography</a></li>
-              <li><a href="/blog" class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to blog">Blog</a></li>
-              <li><a href="/tools" class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to tools page">Toodles</a></li>
+              <li><a href={base + "/games"} class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to games page">Games</a></li>
+              <li><a href={base + "/photography"} class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to photography page">Photography</a></li>
+              <li><a href={base + "/blog"} class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to blog">Blog</a></li>
+              <li><a href={base + "/tools"} class="nav-link transition-colors rounded px-2 py-1" aria-label="Navigate to tools page">Toodles</a></li>
             </ul>
           </div>
 
@@ -204,20 +205,20 @@ if (image) {
         <!-- Mobile Navigation -->
         <div id="mobile-menu" class="hidden lg:hidden mt-4">
           <ul class="flex flex-col gap-1 text-sm font-medium" role="list">
-            <li><a href="/" class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to home page">Home</a></li>
-            <li><a href="/work" class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to projects page">Projects</a></li>
+            <li><a href={base + "/"} class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to home page">Home</a></li>
+            <li><a href={base + "/work"} class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to projects page">Projects</a></li>
             <!-- Media section -->
             <li class="pt-2 pb-1 px-2 text-xs uppercase tracking-wider" style="color: var(--text-secondary);">Media</li>
-            <li><a href="/books" class="nav-link block transition-colors rounded px-4 py-2" aria-label="Navigate to books page">Books</a></li>
-            <li><a href="/music" class="nav-link block transition-colors rounded px-4 py-2" aria-label="Navigate to music page">Music</a></li>
-            <li><a href="/movies" class="nav-link block transition-colors rounded px-4 py-2" aria-label="Navigate to movies page">Movies</a></li>
-            <li><a href="/tv" class="nav-link block transition-colors rounded px-4 py-2" aria-label="Navigate to TV shows page">TV</a></li>
-            <li><a href="/anime" class="nav-link block transition-colors rounded px-4 py-2" aria-label="Navigate to anime page">Anime</a></li>
+            <li><a href={base + "/books"} class="nav-link block transition-colors rounded px-4 py-2" aria-label="Navigate to books page">Books</a></li>
+            <li><a href={base + "/music"} class="nav-link block transition-colors rounded px-4 py-2" aria-label="Navigate to music page">Music</a></li>
+            <li><a href={base + "/movies"} class="nav-link block transition-colors rounded px-4 py-2" aria-label="Navigate to movies page">Movies</a></li>
+            <li><a href={base + "/tv"} class="nav-link block transition-colors rounded px-4 py-2" aria-label="Navigate to TV shows page">TV</a></li>
+            <li><a href={base + "/anime"} class="nav-link block transition-colors rounded px-4 py-2" aria-label="Navigate to anime page">Anime</a></li>
             <!-- Other pages -->
-            <li class="pt-2"><a href="/games" class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to games page">Games</a></li>
-            <li><a href="/photography" class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to photography page">Photography</a></li>
-            <li><a href="/blog" class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to blog">Blog</a></li>
-            <li><a href="/tools" class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to tools page">Toodles</a></li>
+            <li class="pt-2"><a href={base + "/games"} class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to games page">Games</a></li>
+            <li><a href={base + "/photography"} class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to photography page">Photography</a></li>
+            <li><a href={base + "/blog"} class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to blog">Blog</a></li>
+            <li><a href={base + "/tools"} class="nav-link block transition-colors rounded px-2 py-2" aria-label="Navigate to tools page">Toodles</a></li>
           </ul>
         </div>
       </nav>

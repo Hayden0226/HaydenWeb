@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="PGP Public Key - Hayden" description="My PGP public key for secure communication">
@@ -14,7 +15,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <h2 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">Download Options</h2>
       <div class="flex gap-4 my-4">
         <a
-          href="/publickey.asc"
+          href={base + "/publickey.asc"}
           download
           class="action-button-primary inline-block px-4 py-2 rounded transition-colors"
         >

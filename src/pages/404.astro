@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AnimatedCard from '../components/AnimatedCard';
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="404 - Page Not Found" description="This page does not exist">
@@ -17,7 +18,7 @@ import AnimatedCard from '../components/AnimatedCard';
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <a
-            href="/"
+            href={base + "/"}
             class="action-button-primary inline-flex items-center gap-2 px-6 py-3 rounded-lg transition-colors font-medium"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,7 +28,7 @@ import AnimatedCard from '../components/AnimatedCard';
           </a>
 
           <a
-            href="/blog"
+            href={base + "/blog"}
             class="action-button-primary inline-flex items-center gap-2 px-6 py-3 rounded-lg transition-colors font-medium"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,14 +43,14 @@ import AnimatedCard from '../components/AnimatedCard';
             Looking for something specific? Here are some helpful links:
           </p>
           <div class="flex flex-wrap gap-3 justify-center">
-            <a href="/work" class="text-sm hover:underline" style="color: var(--accent);">Work Experience</a>
+            <a href={base + "/work"} class="text-sm hover:underline" style="color: var(--accent);">Work Experience</a>
             <span style="color: var(--text-secondary);">•</span>
-            <a href="/projects" class="text-sm hover:underline" style="color: var(--accent);">Projects</a>
+            <a href={base + "/projects"} class="text-sm hover:underline" style="color: var(--accent);">Projects</a>
             <span style="color: var(--text-secondary);">•</span>
             <span style="color: var(--text-secondary);">•</span>
-            <a href="/interests" class="text-sm hover:underline" style="color: var(--accent);">Interests</a>
+            <a href={base + "/interests"} class="text-sm hover:underline" style="color: var(--accent);">Interests</a>
             <span style="color: var(--text-secondary);">•</span>
-            <a href="/pgp" class="text-sm hover:underline" style="color: var(--accent);">PGP Key</a>
+            <a href={base + "/pgp"} class="text-sm hover:underline" style="color: var(--accent);">PGP Key</a>
           </div>
         </div>
       </div>

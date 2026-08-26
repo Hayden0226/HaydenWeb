@@ -11,6 +11,7 @@ const projects = (await getCollection('projects'))
     // Then, sort by start date (most recent first)
     return b.data.startDate.valueOf() - a.data.startDate.valueOf();
   });
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout
@@ -27,7 +28,7 @@ const projects = (await getCollection('projects'))
         {projects.map((project, index) => (
           <AnimatedCard
             client:load
-            href={`/projects/${project.slug}`}
+            href={`${base}projects/${project.slug}`}
             delay={index * 0.05}
             className="h-full flex flex-col"
           >

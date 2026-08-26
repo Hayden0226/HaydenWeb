@@ -13,6 +13,7 @@ export async function getStaticPaths() {
 
 const { problem } = Astro.props;
 const { Content } = await problem.render();
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title={`Problem ${problem.data.problemNumber}: ${problem.data.title} - Project Euler`} description={problem.data.title}>
@@ -88,7 +89,7 @@ const { Content } = await problem.render();
     <!-- Footer -->
     <footer class="mt-12">
       <a
-        href="/projects/project-euler"
+        href={base + "/projects/project-euler"}
         class="inline-flex items-center gap-2 transition-colors font-medium"
         class="accent-link"
         style="color: var(--accent);"

@@ -41,6 +41,8 @@ jobs:
         run: npx astro build
         env:
           ASTRO_TELEMETRY_DISABLED: '1'
+          # TEMP: subpath for github.io preview; remove once haydenweb.com custom domain is live
+          SITE_BASE: /HaydenWeb
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

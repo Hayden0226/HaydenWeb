@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 
 const projects = (await getCollection('projects'))
   .sort((a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf());
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="Projects - Hayden" description="My personal projects and experiments">
@@ -13,7 +14,7 @@ const projects = (await getCollection('projects'))
     <div class="grid md:grid-cols-2 gap-6">
       {projects.map((project) => (
         <a
-          href={`/projects/${project.slug}`}
+          href={`${base}projects/${project.slug}`}
           class="block p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border"
           style="background-color: var(--bg-card); border-color: var(--border);"
         >
