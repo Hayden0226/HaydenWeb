@@ -2,7 +2,7 @@
 
 Hayden 的个人网站，基于 [Astro](https://astro.build/) + Tailwind CSS 构建，部署在 GitHub Pages。
 
-- 线上地址：https://haydenweb.com
+- 线上地址：https://i.haydenweb.com
 - GitHub：https://github.com/Hayden0226
 
 ## 页面
@@ -42,8 +42,7 @@ npm run dev
 2. `Settings → Pages → Source` 选择 **GitHub Actions**
 3. 推送到 `main` 自动构建部署；工作流每 6 小时重新构建一次，保持音乐数据新鲜
 
-> 自定义域名：`public/CNAME` 已指向 `haydenweb.com`，配好 DNS 后即可通过该域名访问。
-> 注意：`deploy.yml` 中 `SITE_BASE: /HaydenWeb`（带 `# TEMP` 注释）是为 github.io 子路径预览临时加的，域名上线后删掉那两行即可。
+> 自定义域名：`public/CNAME` 已指向 `i.haydenweb.com`。需要在 DNS 服务商添加 CNAME 记录：`i` → `Hayden0226.github.io`，并在仓库 `Settings → Pages` 的 Custom domain 填 `i.haydenweb.com`。
 
 ## 音乐数据
 

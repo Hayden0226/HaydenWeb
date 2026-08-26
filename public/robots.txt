@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://haydenweb.com/sitemap-index.xml
+Sitemap: https://i.haydenweb.com/sitemap-index.xml

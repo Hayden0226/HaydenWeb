@@ -1,7 +1,7 @@
 Contact: https://github.com/Hayden0226
 Expires: 2027-12-31T23:59:59.000Z
 Preferred-Languages: en
-Canonical: https://haydenweb.com/.well-known/security.txt
+Canonical: https://i.haydenweb.com/.well-known/security.txt
 
 # Security Policy
 

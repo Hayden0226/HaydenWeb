@@ -4,7 +4,7 @@ import { getCollection } from 'astro:content';
 
 const projects = (await getCollection('projects'))
   .sort((a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf());
-const base = import.meta.env.BASE_URL;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <BaseLayout title="Projects - Hayden" description="My personal projects and experiments">
