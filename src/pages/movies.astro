@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MoviesFilter from '../components/MoviesFilter';
+import StatGrid from '../components/StatGrid.astro';
+import { getLetterboxdData } from '../utils/letterboxd';
+
+// Fetch Letterboxd data at build time
+const letterboxdData = await getLetterboxdData();
+
+// Use Letterboxd data if available
+let movies = [];
+if (letterboxdData && letterboxdData.movies.length > 0) {
+  // Map Letterboxd movies to the format expected by the UI
+  movies = letterboxdData.movies.map(movie => ({
+    data: {
+      title: movie.title,
+      year: movie.year,
+      releaseDate: movie.releaseDate,
+      director: movie.director,
+      posterImage: movie.posterImage,
+      rating: movie.rating,
+      watchedDate: movie.watchedDate,
+      reviewText: movie.reviewText,
+      link: movie.link,
+      rewatch: movie.rewatch,
+    }
+  }));
+}
+---
+
+<BaseLayout
+  title="Movies - Hayden"
+  description="Movies I've watched"
+>
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <h1 class="text-5xl font-bold mb-4" style="color: var(--text-primary);">
+        Movies
+      </h1>
+    </div>
+
+    {movies.length > 0 && (
+      <section class="mb-20">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-3xl font-bold" style="color: var(--text-primary);">
+            My Film Diary
+          </h2>
+          <span class="text-sm" style="color: var(--text-secondary);">
+            {movies.length} {movies.length === 1 ? 'film' : 'films'}
+          </span>
+        </div>
+
+        <MoviesFilter client:load movies={movies} />
+
+        <StatGrid title="Viewing Stats" stats={[
+          { value: movies.length, label: 'Total Films' },
+          { value: movies.filter(m => m.data.rating && m.data.rating > 0).length, label: 'Rated' },
+          { value: movies.filter(m => m.data.rating === 5).length, label: '5-Star Films' },
+          { value: movies.filter(m => m.data.rewatch).length, label: 'Rewatches' },
+        ]} />
+      </section>
+    )}
+
+    {movies.length === 0 && (
+      <div class="text-center py-12">
+        <p class="text-lg" style="color: var(--text-secondary);">
+          Couldn't load movie data right now — check back soon.
+        </p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

@@ -1,0 +1,176 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MediaCard from '../components/MediaCard';
+import { getLastfmStats } from '../utils/lastfm';
+
+// Fetch listening stats from Last.fm (free API, no OAuth needed)
+const lastfm = await getLastfmStats();
+
+const recentTracks = lastfm?.recentTracks || [];
+const topArtists = lastfm?.topArtists || [];
+const topTracks = lastfm?.topTracks || [];
+const topAlbums = lastfm?.topAlbums || [];
+const topGenres = lastfm?.topGenres || [];
+const totalScrobbles = lastfm?.totalScrobbles || 0;
+
+// Small inline placeholder for tracks without cover art
+const FALLBACK_COVER = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 300'><rect width='200' height='300' fill='%23e2e8f0'/><text x='100' y='160' font-size='48' text-anchor='middle' fill='%2394a3b8'>♪</text></svg>";
+// Covers are already resolved to iTunes (mzstatic) URLs in lastfm.ts; anything
+// left empty falls back to the inline placeholder below.
+const cover = (url: string) => url || FALLBACK_COVER;
+---
+
+<BaseLayout
+  title="Music - Hayden"
+  description="Music I'm listening to, tracked via Last.fm"
+>
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <h1 class="text-5xl font-bold mb-4" style="color: var(--text-primary);">
+        Music
+      </h1>
+      <p class="text-lg" style="color: var(--text-secondary);">
+        Listening stats via Last.fm
+      </p>
+    </div>
+
+    {lastfm ? (
+      <section class="mb-20">
+        {/* Stats banner */}
+        <div class="mb-12 p-6 rounded-lg" style="background-color: var(--bg-secondary);">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+            <div>
+              <div class="text-3xl font-bold" style="color: var(--accent);">
+                {totalScrobbles.toLocaleString()}
+              </div>
+              <div class="text-sm" style="color: var(--text-secondary);">Total Scrobbles</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold" style="color: var(--accent);">
+                {topArtists.length}
+              </div>
+              <div class="text-sm" style="color: var(--text-secondary);">Top Artists (Month)</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold" style="color: var(--accent);">
+                {recentTracks.length}
+              </div>
+              <div class="text-sm" style="color: var(--text-secondary);">Recent Tracks</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recently Played */}
+        {recentTracks.length > 0 && (
+          <div class="mb-12 p-6 rounded-lg" style="background-color: var(--bg-secondary);">
+            <h3 class="text-xl font-bold mb-6" style="color: var(--text-primary);">Recently Played</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {recentTracks.slice(0, 10).map((track, index) => (
+                <a href={track.url} target="_blank" rel="noopener noreferrer" class="group">
+                  <MediaCard
+                    client:load
+                    title={track.name}
+                    subtitle={track.artist}
+                    image={cover(track.image)}
+                    tags={track.nowPlaying ? ['Now Playing'] : []}
+                    delay={index * 0.05}
+                  />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Top Artists */}
+        {topArtists.length > 0 && (
+          <div class="mb-12 p-6 rounded-lg" style="background-color: var(--bg-secondary);">
+            <h3 class="text-xl font-bold mb-6" style="color: var(--text-primary);">
+              Top Artists
+              <span class="text-base font-normal ml-3" style="color: var(--text-secondary);">This Month</span>
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {topArtists.slice(0, 10).map((artist, index) => (
+                <a href={artist.url} target="_blank" rel="noopener noreferrer" class="group">
+                  <MediaCard
+                    client:load
+                    title={artist.name}
+                    subtitle={`${artist.playcount} plays`}
+                    image={cover(artist.image)}
+                    tags={artist.tags.slice(0, 2)}
+                    delay={index * 0.05}
+                  />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Top Tracks */}
+        {topTracks.length > 0 && (
+          <div class="mb-12 p-6 rounded-lg" style="background-color: var(--bg-secondary);">
+            <h3 class="text-xl font-bold mb-6" style="color: var(--text-primary);">
+              Top Tracks
+              <span class="text-base font-normal ml-3" style="color: var(--text-secondary);">This Month</span>
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {topTracks.slice(0, 10).map((track, index) => (
+                <a href={track.url} target="_blank" rel="noopener noreferrer" class="group">
+                  <MediaCard
+                    client:load
+                    title={track.name}
+                    subtitle={`${track.artist} · ${track.playcount} plays`}
+                    image={cover(track.image)}
+                    delay={index * 0.05}
+                  />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Top Albums */}
+        {topAlbums.length > 0 && (
+          <div class="mb-12 p-6 rounded-lg" style="background-color: var(--bg-secondary);">
+            <h3 class="text-xl font-bold mb-6" style="color: var(--text-primary);">
+              Top Albums
+              <span class="text-base font-normal ml-3" style="color: var(--text-secondary);">This Month</span>
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {topAlbums.slice(0, 12).map((album, index) => (
+                <a href={album.url} target="_blank" rel="noopener noreferrer" class="group">
+                  <MediaCard
+                    client:load
+                    title={album.name}
+                    subtitle={`${album.artist} · ${album.playcount} plays`}
+                    image={cover(album.image)}
+                    delay={index * 0.05}
+                  />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Top Genres */}
+        {topGenres.length > 0 && (
+          <div class="mt-8 p-6 rounded-lg" style="background-color: var(--bg-secondary);">
+            <h3 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">
+              Top Genres
+            </h3>
+            <div class="flex flex-wrap gap-3">
+              {topGenres.map((genre) => (
+                <span class="px-4 py-2 rounded-full font-medium" style="background-color: var(--accent-surface); color: var(--accent-surface-fg); border: 2px solid var(--accent);">
+                  {genre}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+    ) : (
+      <p class="text-center" style="color: var(--text-secondary);">
+        Listening stats aren't configured yet. Add LASTFM_API_KEY and LASTFM_USERNAME to .env.
+      </p>
+    )}
+  </div>
+</BaseLayout>

@@ -1,0 +1,27 @@
+---
+// Redirect page: Photography gallery lives at visuals.haydenweb.com
+const TARGET_URL = 'https://visuals.haydenweb.com/';
+const TITLE = 'Photography';
+const DESCRIPTION = 'Hayden\'s personal photography gallery.';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{TITLE} - Hayden</title>
+    <meta name="description" content={DESCRIPTION} />
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content={`0; url=${TARGET_URL}`} />
+    <script is:inline>
+      window.location.replace('https://visuals.haydenweb.com/');
+    </script>
+  </head>
+  <body style="background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; text-align: center; padding: 24px;">
+    <p style="font-size: 18px;">
+      Redirecting to my photography gallery&hellip;<br />
+      <a href="https://visuals.haydenweb.com/" style="color: #60a5fa;">visuals.haydenweb.com</a>
+    </p>
+  </body>
+</html>

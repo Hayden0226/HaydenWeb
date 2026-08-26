@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TVFilter from '../components/TVFilter';
+import StatGrid from '../components/StatGrid.astro';
+import { getTmdbTVData } from '../utils/tmdb';
+
+// Fetch TV data from TMDB at build time
+const tvData = await getTmdbTVData();
+
+// Map shows to the format expected by the UI
+let shows = [];
+if (tvData && tvData.shows.length > 0) {
+  shows = tvData.shows.map(show => ({
+    data: {
+      title: show.title,
+      year: show.year,
+      posterImage: show.posterImage,
+      firstAiredAt: show.firstAiredAt,
+      rating: show.rating,
+      link: show.link,
+    }
+  }));
+}
+---
+
+<BaseLayout
+  title="TV Shows - Hayden"
+  description="TV shows I've watched"
+>
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <h1 class="text-5xl font-bold mb-4" style="color: var(--text-primary);">
+        TV Shows
+      </h1>
+    </div>
+
+    {shows.length > 0 && (
+      <section class="mb-20">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-3xl font-bold" style="color: var(--text-primary);">
+            My Watch History
+          </h2>
+          <span class="text-sm" style="color: var(--text-secondary);">
+            {shows.length} {shows.length === 1 ? 'show' : 'shows'}
+          </span>
+        </div>
+
+        <TVFilter client:load shows={shows} />
+
+        <StatGrid title="Viewing Stats" stats={[
+          { value: tvData?.stats.totalShows || 0, label: 'Total Shows' },
+          { value: tvData?.stats.rated || 0, label: 'Rated' },
+          { value: tvData?.stats.averageRating || 0, label: 'Avg Rating' },
+        ]} />
+      </section>
+    )}
+
+    {shows.length === 0 && (
+      <div class="text-center py-12">
+        <p class="text-lg" style="color: var(--text-secondary);">
+          Couldn't load TV show data right now — check back soon.
+        </p>
+      </div>
+    )}
+
+    {/* Attribution (required by TMDB API terms) */}
+    <div class="text-center mt-8 text-sm" style="color: var(--text-secondary);">
+      Data from <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" class="underline hover:no-underline" style="color: var(--accent);" title="This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.">TMDB</a>
+    </div>
+  </div>
+</BaseLayout>

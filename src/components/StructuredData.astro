@@ -1,0 +1,70 @@
+---
+interface Props {
+  type?: 'person' | 'article' | 'website' | 'blog';
+  data?: Record<string, any>;
+}
+
+const { type = 'website', data = {} } = Astro.props;
+
+const baseStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Hayden',
+  url: 'https://github.com/Hayden0226',
+  image: 'https://avatars.githubusercontent.com/u/247107814?s=400',
+  jobTitle: 'Full-Stack Developer',
+  sameAs: [
+    'https://github.com/Hayden0226',
+    'https://visuals.haydenweb.com',
+  ],
+};
+
+const websiteData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Hayden',
+  url: 'https://github.com/Hayden0226',
+  description: 'Full-Stack Developer | Personal Website',
+  author: {
+    '@type': 'Person',
+    name: 'Hayden',
+  },
+};
+
+const getStructuredData = () => {
+  switch (type) {
+    case 'person':
+      return baseStructuredData;
+    case 'website':
+      return websiteData;
+    case 'article':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        ...data,
+        author: {
+          '@type': 'Person',
+          name: 'Hayden',
+          url: 'https://github.com/Hayden0226',
+        },
+      };
+    case 'blog':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'Blog',
+        ...data,
+        author: {
+          '@type': 'Person',
+          name: 'Hayden',
+          url: 'https://github.com/Hayden0226',
+        },
+      };
+    default:
+      return websiteData;
+  }
+};
+
+const structuredData = getStructuredData();
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />

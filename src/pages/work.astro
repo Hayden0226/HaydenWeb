@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import AnimatedCard from '../components/AnimatedCard';
+
+const projects = (await getCollection('projects'))
+  .sort((a, b) => {
+    // First, sort by featured status (featured first)
+    if (a.data.featured && !b.data.featured) return -1;
+    if (!a.data.featured && b.data.featured) return 1;
+    // Then, sort by start date (most recent first)
+    return b.data.startDate.valueOf() - a.data.startDate.valueOf();
+  });
+---
+
+<BaseLayout
+  title="Projects - Hayden"
+  description="My personal projects"
+>
+  <div class="max-w-6xl mx-auto">
+    <!-- Projects Section -->
+    <section class="mb-20">
+      <h2 class="text-3xl font-bold mb-8" style="color: var(--text-primary);">
+        Projects
+      </h2>
+      <div class="grid md:grid-cols-2 gap-6 md:auto-rows-fr">
+        {projects.map((project, index) => (
+          <AnimatedCard
+            client:load
+            href={`/projects/${project.slug}`}
+            delay={index * 0.05}
+            className="h-full flex flex-col"
+          >
+            <div class="flex justify-between items-start mb-3 flex-shrink-0">
+              <h3 class="text-2xl font-semibold" style="color: var(--text-primary);">
+                {project.data.title}
+              </h3>
+              {project.data.featured && (
+                <span class="text-xs px-2 py-1 rounded-full font-medium" style="background-color: var(--accent-surface); color: var(--accent-surface-fg); border: 2px solid var(--accent);">
+                  Featured
+                </span>
+              )}
+            </div>
+
+            <p class="mb-4 flex-grow" style="color: var(--text-secondary);">
+              {project.data.description}
+            </p>
+
+            {project.data.technologies && project.data.technologies.length > 0 && (
+              <div class="flex flex-wrap gap-2 mt-auto">
+                {project.data.technologies.map((tech) => (
+                  <span class="text-xs px-3 py-1 rounded-full font-medium" style="background-color: var(--bg-secondary); color: var(--accent);">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            )}
+          </AnimatedCard>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>

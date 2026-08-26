@@ -1,0 +1,570 @@
+@import "tailwindcss";
+
+/* Theme Variables */
+:root {
+  /* Default theme: Academic Minimal */
+  --bg-primary: #fafaf9;
+  --bg-secondary: #f5f5f4;
+  --bg-card: #ffffff;
+  --text-primary: #1c1917;
+  --text-secondary: #78716c;
+  --accent: #0c4a6e;
+  --accent-rgb: 12, 74, 110;
+  --accent-hover: #075985;
+  --accent-fg: #ffffff;
+  --accent-surface: var(--accent);
+  --accent-surface-fg: var(--accent-fg);
+  --border: #e7e5e4;
+  --shadow: rgba(0, 0, 0, 0.05);
+  --font-primary: 'Georgia', 'Cambria', 'Times New Roman', serif;
+  --font-secondary: 'Georgia', 'Cambria', 'Times New Roman', serif;
+  --border-radius: 2px;
+
+  /* Astro/Shiki syntax highlighting defaults (light theme) */
+  --astro-code-foreground: #1a1a1a;
+  --astro-code-background: #f8f9fa;
+  --astro-code-token-constant: #0550ae;
+  --astro-code-token-string: #0a3069;
+  --astro-code-token-comment: #6e7781;
+  --astro-code-token-keyword: #cf222e;
+  --astro-code-token-parameter: #953800;
+  --astro-code-token-function: #8250df;
+  --astro-code-token-string-expression: #0a3069;
+  --astro-code-token-punctuation: #1a1a1a;
+  --astro-code-token-link: #0550ae;
+}
+
+[data-theme="academic-minimal"] {
+  --bg-primary: #fafaf9;
+  --bg-secondary: #f5f5f4;
+  --bg-card: #ffffff;
+  --text-primary: #1c1917;
+  --text-secondary: #78716c;
+  --accent: #0c4a6e;
+  --accent-rgb: 12, 74, 110;
+  --accent-hover: #075985;
+  --accent-fg: #ffffff;
+  --accent-surface: var(--accent);
+  --accent-surface-fg: var(--accent-fg);
+  --border: #e7e5e4;
+  --shadow: rgba(0, 0, 0, 0.05);
+  --font-primary: 'Georgia', 'Cambria', 'Times New Roman', serif;
+  --font-secondary: 'Georgia', 'Cambria', 'Times New Roman', serif;
+  --border-radius: 2px;
+}
+
+/* Apply theme variables */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-secondary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Accessibility - Skip link */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 1rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Accessibility - Focus indicators */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Navigation link hover styles (replaces inline event handlers) */
+.nav-link:hover {
+  color: var(--accent) !important;
+}
+
+.accent-link:hover {
+  color: var(--accent-hover) !important;
+}
+
+/* Navigation dropdown styles */
+.nav-dropdown-trigger:hover {
+  color: var(--accent);
+}
+
+.nav-dropdown-menu a:hover {
+  background-color: var(--bg-secondary);
+}
+
+/* Override Tailwind with theme variables */
+.bg-white { background-color: var(--bg-card) !important; }
+.text-gray-900 { color: var(--text-primary) !important; }
+.text-gray-600 { color: var(--text-secondary) !important; }
+.text-gray-500 { color: var(--text-secondary) !important; }
+.text-gray-400 { color: var(--text-secondary) !important; }
+.text-blue-600 { color: var(--accent) !important; }
+.text-blue-400 { color: var(--accent) !important; }
+.hover\:text-blue-600:hover { color: var(--accent-hover) !important; }
+.hover\:text-blue-700:hover { color: var(--accent-hover) !important; }
+.bg-blue-600 { background-color: var(--accent) !important; }
+.bg-blue-500 { background-color: var(--accent) !important; }
+.hover\:bg-blue-700:hover { background-color: var(--accent-hover) !important; }
+.hover\:bg-blue-600:hover { background-color: var(--accent-hover) !important; }
+.border-gray-200 { border-color: var(--border) !important; }
+.border-gray-700 { border-color: var(--border) !important; }
+
+
+/* Astro Code Theme - Light themes */
+[data-theme="academic-minimal"] {
+  --astro-code-foreground: #1a1a1a;
+  --astro-code-background: var(--bg-secondary);
+  --astro-code-token-constant: #0550ae;
+  --astro-code-token-string: #0a3069;
+  --astro-code-token-comment: #6e7781;
+  --astro-code-token-keyword: #cf222e;
+  --astro-code-token-parameter: #953800;
+  --astro-code-token-function: #8250df;
+  --astro-code-token-string-expression: #0a3069;
+  --astro-code-token-punctuation: #1a1a1a;
+  --astro-code-token-link: #0550ae;
+}
+
+[data-theme="academic-minimal"] .prose pre {
+  border: 1px solid var(--border);
+}
+
+/* Light theme backgrounds - Border and shadow like work page */
+[data-theme="academic-minimal"] [style*="background-color: var(--bg-secondary)"].mb-12,
+[data-theme="academic-minimal"] [style*="background-color: var(--bg-secondary)"].mt-8 {
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Academic Minimal theme specifics */
+[data-theme="academic-minimal"] {
+  line-height: 1.75;
+}
+
+[data-theme="academic-minimal"] h1,
+[data-theme="academic-minimal"] h2,
+[data-theme="academic-minimal"] h3 {
+  font-family: var(--font-primary) !important;
+  font-weight: 600;
+}
+
+[data-theme="academic-minimal"] .prose {
+  max-width: 70ch;
+}
+
+/* Blog Prose Styling - Theme-aware */
+.prose {
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.prose h1 {
+  font-size: 2rem;
+  margin-top: 0;
+}
+
+.prose h2 {
+  font-size: 1.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.prose h3 {
+  font-size: 1.5rem;
+}
+
+.prose h4 {
+  font-size: 1.25rem;
+}
+
+.prose p {
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+  font-size: 1.0625rem;
+}
+
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.prose a:hover {
+  color: var(--accent-hover);
+}
+
+.prose ul,
+.prose ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.75rem;
+  color: var(--text-secondary);
+}
+
+.prose ul {
+  list-style-type: disc;
+}
+
+.prose ol {
+  list-style-type: decimal;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+}
+
+.prose li::marker {
+  color: var(--text-secondary);
+}
+
+.prose strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose code {
+  background-color: var(--bg-secondary);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  color: var(--text-primary);
+}
+
+.prose pre {
+  background-color: var(--bg-secondary) !important;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 1.25rem;
+  color: var(--text-primary);
+}
+
+/* Override Shiki/Astro syntax highlighter backgrounds */
+.prose pre[style],
+.astro-code,
+.shiki {
+  background-color: var(--bg-secondary) !important;
+}
+
+.prose pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--accent);
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-bottom: 1.25rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.prose hr {
+  border: none;
+  border-top: 2px solid var(--border);
+  margin: 2rem 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.25rem;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--border);
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.prose th {
+  background-color: var(--bg-secondary);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.prose td {
+  color: var(--text-secondary);
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+/* Project and Paper Content Styling */
+.project-content, .paper-content {
+  line-height: 1.75;
+}
+
+.project-content h1,
+.project-content h2,
+.project-content h3,
+.project-content h4,
+.paper-content h1,
+.paper-content h2,
+.paper-content h3,
+.paper-content h4 {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.project-content h1,
+.paper-content h1 {
+  font-size: 2rem;
+  margin-top: 0;
+}
+
+.project-content h2,
+.paper-content h2 {
+  font-size: 1.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.project-content h3,
+.paper-content h3 {
+  font-size: 1.5rem;
+}
+
+.project-content h4,
+.paper-content h4 {
+  font-size: 1.25rem;
+}
+
+.project-content p,
+.paper-content p {
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+  font-size: 1.0625rem;
+}
+
+.project-content a,
+.paper-content a {
+  color: var(--accent);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.project-content a:hover,
+.paper-content a:hover {
+  color: var(--accent-hover);
+}
+
+.project-content ul,
+.project-content ol,
+.paper-content ul,
+.paper-content ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.75rem;
+  color: var(--text-secondary);
+}
+
+.project-content li,
+.paper-content li {
+  margin-bottom: 0.5rem;
+}
+
+.project-content strong,
+.paper-content strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.project-content em,
+.paper-content em {
+  font-style: italic;
+}
+
+.project-content code,
+.paper-content code {
+  background-color: var(--bg-secondary);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  color: var(--text-primary);
+}
+
+.project-content pre,
+.paper-content pre {
+  background-color: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 1.25rem;
+}
+
+.project-content pre code,
+.paper-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.project-content blockquote,
+.paper-content blockquote {
+  border-left: 4px solid var(--accent);
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-bottom: 1.25rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.project-content hr,
+.paper-content hr {
+  border: none;
+  border-top: 2px solid var(--border);
+  margin: 2rem 0;
+}
+
+/* Social Links - Theme-aware */
+.social-link {
+  background-color: var(--accent-surface);
+  color: var(--accent-surface-fg);
+  border: 2px solid var(--accent);
+}
+
+.social-link:hover {
+  background-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+/* Action Buttons - Theme-aware */
+.action-button-primary {
+  background-color: var(--accent-surface);
+  color: var(--accent-surface-fg);
+  border: 2px solid var(--accent);
+}
+
+.action-button-primary:hover {
+  background-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+
+/* Theme-aware Range Slider */
+.theme-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+.theme-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.theme-slider::-webkit-slider-thumb:hover {
+  background: var(--accent-hover);
+}
+
+/* Firefox */
+.theme-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.theme-slider::-moz-range-thumb:hover {
+  background: var(--accent-hover);
+}
+
+.theme-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+}
+
+/* Microsoft Edge */
+.theme-slider::-ms-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.theme-slider::-ms-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  border-color: transparent;
+  color: transparent;
+}
+
+/* Scrollbar hide utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+/* Audio-gated elements: hidden unless the secret ?audio=on flag is active
+   (data-audio-enabled is set on <html> by the inline script in BaseLayout) */
+.audio-gated {
+  display: none;
+}
+
+html[data-audio-enabled] .audio-gated {
+  display: contents;
+}

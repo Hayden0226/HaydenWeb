@@ -1,0 +1,183 @@
+steps:
+  # Install dependencies
+  # Uses custom image with Chrome deps pre-installed (see Dockerfile.cloudbuild)
+  - name: 'gcr.io/personal-website-334502/node-puppeteer:22'
+    entrypoint: npm
+    args: ['ci']
+    id: 'install-dependencies'
+
+  # Restore the previous build's data cache as a last-known-good fallback.
+  # The build still fetches fresh data for every source — this is only read
+  # (via FileCache.getStale) when a scrape/API fails outright, so the page
+  # renders yesterday's data instead of nothing. The health check still
+  # alerts on the stale timestamp.
+  - name: 'gcr.io/cloud-builders/gsutil'
+    entrypoint: bash
+    args:
+      - '-c'
+      - 'gsutil -m rsync -r gs://personal-website-334502_cloudbuild/build-cache .cache-fallback || echo "No previous build cache"'
+    id: 'restore-build-cache'
+    waitFor: ['-']
+
+  # Build the site with environment variables from Secret Manager
+  - name: 'gcr.io/personal-website-334502/node-puppeteer:22'
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        # Pre-build: Refresh OAuth tokens before Astro builds pages in parallel
+        # This avoids race conditions when multiple pages try to refresh concurrently
+        node scripts/refresh-tokens.cjs
+
+        # Source any refreshed tokens (exported by refresh-tokens.cjs)
+        if [ -f .env.refresh ]; then
+          echo "Loading refreshed tokens..."
+          source .env.refresh
+        fi
+
+        # Run the build (prebuild script is skipped in Cloud Build)
+        npm run build
+    id: 'build-site'
+    env:
+      - 'NODE_ENV=production'
+      - 'CLOUD_BUILD=true'
+    secretEnv:
+      - 'STEAM_API_KEY'
+      - 'STEAM_ID'
+      - 'PSN_NPSSO'
+      - 'PSN_REFRESH_TOKEN'
+      - 'PSN_REFRESH_TOKEN_EXPIRES_AT'
+      - 'IGDB_CLIENT_ID'
+      - 'IGDB_CLIENT_SECRET'
+      - 'IGDB_ACCESS_TOKEN'
+      - 'SPOTIFY_CLIENT_ID'
+      - 'SPOTIFY_CLIENT_SECRET'
+      - 'SPOTIFY_REFRESH_TOKEN'
+      - 'LETTERBOXD_USERNAME'
+      - 'MAL_CLIENT_ID'
+      - 'MAL_CLIENT_SECRET'
+      - 'MAL_ACCESS_TOKEN'
+      - 'MAL_REFRESH_TOKEN'
+      - 'GOODREADS_USER_ID'
+      - 'KAYA_USERNAME'
+      - 'EXOPHASE_USERNAME'
+      - 'TMDB_ACCESS_TOKEN'
+      - 'TMDB_ACCOUNT_OBJECT_ID'
+      - 'TMDB_TV_LIST_ID'
+    waitFor: ['install-dependencies', 'restore-build-cache']
+
+  # Save this build's data cache for the next build's fallback. No -d flag:
+  # if a source failed today (no cache file written), the previous good copy
+  # stays in the bucket instead of being deleted.
+  - name: 'gcr.io/cloud-builders/gsutil'
+    entrypoint: bash
+    args:
+      - '-c'
+      - 'gsutil -m rsync -r .cache gs://personal-website-334502_cloudbuild/build-cache || echo "No cache to save"'
+    id: 'save-build-cache'
+    waitFor: ['build-site']
+
+  # Append this build's data to the historical snapshot archive (read by
+  # future stats pages; the build-cache above stays the fallback mechanism).
+  # Every build writes its own timestamped directory
+  # (snapshots/YYYY-MM-DD/HHMMSS/, UTC — this container has no tzdata, and
+  # readers regroup timestamps into local days at read time anyway) — pure
+  # append-only, nothing is ever overwritten, so intra-day builds each
+  # preserve their fetch (e.g. distinct Spotify recently-played windows).
+  # Non-fatal: snapshot problems must never fail the build.
+  - name: 'gcr.io/cloud-builders/gsutil'
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        STAMP=$$(date -u "+%F/%H%M%S")
+        mkdir -p /tmp/snap
+        for f in .cache/*.json; do
+          [ -e "$$f" ] || continue
+          gzip -c "$$f" > "/tmp/snap/$$(basename $$f).gz"
+        done
+        gsutil -m cp /tmp/snap/*.gz "gs://personal-website-334502_cloudbuild/snapshots/$$STAMP/" \
+          || echo "WARNING: snapshot upload failed"
+    id: 'save-daily-snapshot'
+    waitFor: ['build-site']
+
+  # Check API health and send notifications if any failed
+  - name: 'gcr.io/personal-website-334502/node-puppeteer:22'
+    entrypoint: node
+    args: ['scripts/check-api-health.cjs']
+    id: 'check-api-health'
+    env:
+      - 'NODE_ENV=production'
+    secretEnv:
+      - 'DISCORD_BOT_TOKEN'
+      - 'DISCORD_USER_ID'
+    waitFor: ['build-site']
+
+  # Deploy to Firebase Hosting (cache headers and CDN invalidation are
+  # handled by firebase.json + the deploy itself)
+  - name: 'gcr.io/personal-website-334502/node-puppeteer:22'
+    entrypoint: npx
+    args: ['firebase-tools', 'deploy', '--only', 'hosting', '--project', 'personal-website-334502', '--non-interactive']
+    id: 'deploy-to-firebase'
+    waitFor: ['build-site']
+
+# Secret Manager configuration
+availableSecrets:
+  secretManager:
+    - versionName: projects/personal-website-334502/secrets/STEAM_API_KEY/versions/latest
+      env: 'STEAM_API_KEY'
+    - versionName: projects/personal-website-334502/secrets/STEAM_ID/versions/latest
+      env: 'STEAM_ID'
+    - versionName: projects/personal-website-334502/secrets/PSN_NPSSO/versions/latest
+      env: 'PSN_NPSSO'
+    - versionName: projects/personal-website-334502/secrets/PSN_REFRESH_TOKEN/versions/latest
+      env: 'PSN_REFRESH_TOKEN'
+    - versionName: projects/personal-website-334502/secrets/PSN_REFRESH_TOKEN_EXPIRES_AT/versions/latest
+      env: 'PSN_REFRESH_TOKEN_EXPIRES_AT'
+    - versionName: projects/personal-website-334502/secrets/IGDB_CLIENT_ID/versions/latest
+      env: 'IGDB_CLIENT_ID'
+    - versionName: projects/personal-website-334502/secrets/IGDB_CLIENT_SECRET/versions/latest
+      env: 'IGDB_CLIENT_SECRET'
+    - versionName: projects/personal-website-334502/secrets/IGDB_ACCESS_TOKEN/versions/latest
+      env: 'IGDB_ACCESS_TOKEN'
+    - versionName: projects/personal-website-334502/secrets/SPOTIFY_CLIENT_ID/versions/latest
+      env: 'SPOTIFY_CLIENT_ID'
+    - versionName: projects/personal-website-334502/secrets/SPOTIFY_CLIENT_SECRET/versions/latest
+      env: 'SPOTIFY_CLIENT_SECRET'
+    - versionName: projects/personal-website-334502/secrets/SPOTIFY_REFRESH_TOKEN/versions/latest
+      env: 'SPOTIFY_REFRESH_TOKEN'
+    - versionName: projects/personal-website-334502/secrets/LETTERBOXD_USERNAME/versions/latest
+      env: 'LETTERBOXD_USERNAME'
+    - versionName: projects/personal-website-334502/secrets/MAL_CLIENT_ID/versions/latest
+      env: 'MAL_CLIENT_ID'
+    - versionName: projects/personal-website-334502/secrets/MAL_CLIENT_SECRET/versions/latest
+      env: 'MAL_CLIENT_SECRET'
+    - versionName: projects/personal-website-334502/secrets/MAL_ACCESS_TOKEN/versions/latest
+      env: 'MAL_ACCESS_TOKEN'
+    - versionName: projects/personal-website-334502/secrets/MAL_REFRESH_TOKEN/versions/latest
+      env: 'MAL_REFRESH_TOKEN'
+    - versionName: projects/personal-website-334502/secrets/GOODREADS_USER_ID/versions/latest
+      env: 'GOODREADS_USER_ID'
+    - versionName: projects/personal-website-334502/secrets/KAYA_USERNAME/versions/latest
+      env: 'KAYA_USERNAME'
+    - versionName: projects/personal-website-334502/secrets/EXOPHASE_USERNAME/versions/latest
+      env: 'EXOPHASE_USERNAME'
+    # TMDB API secrets (TV shows tracked via TMDB list + ratings)
+    - versionName: projects/personal-website-334502/secrets/TMDB_ACCESS_TOKEN/versions/latest
+      env: 'TMDB_ACCESS_TOKEN'
+    - versionName: projects/personal-website-334502/secrets/TMDB_ACCOUNT_OBJECT_ID/versions/latest
+      env: 'TMDB_ACCOUNT_OBJECT_ID'
+    - versionName: projects/personal-website-334502/secrets/TMDB_TV_LIST_ID/versions/latest
+      env: 'TMDB_TV_LIST_ID'
+    # Discord notification secrets
+    - versionName: projects/personal-website-334502/secrets/DISCORD_BOT_TOKEN/versions/latest
+      env: 'DISCORD_BOT_TOKEN'
+    - versionName: projects/personal-website-334502/secrets/DISCORD_USER_ID/versions/latest
+      env: 'DISCORD_USER_ID'
+
+# Build configuration
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'  # Use a more powerful machine for faster builds
+
+timeout: 1800s  # 30 minutes for build (generous time for API calls)
