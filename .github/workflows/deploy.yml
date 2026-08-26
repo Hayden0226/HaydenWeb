@@ -36,6 +36,7 @@ jobs:
         run: |
           echo "LASTFM_API_KEY=${{ secrets.LASTFM_API_KEY }}" >> .env
           echo "LASTFM_USERNAME=${{ secrets.LASTFM_USERNAME }}" >> .env
+          echo "GOODREADS_USER_ID=${{ secrets.GOODREADS_USER_ID || '203812556' }}" >> .env
 
       - name: Build static site
         run: npx astro build
