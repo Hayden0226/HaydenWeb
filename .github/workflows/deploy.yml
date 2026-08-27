@@ -38,6 +38,9 @@ jobs:
           echo "LASTFM_USERNAME=${{ secrets.LASTFM_USERNAME }}" >> .env
           echo "GOODREADS_USER_ID=${{ secrets.GOODREADS_USER_ID || '203812556' }}" >> .env
           echo "LETTERBOXD_USERNAME=${{ secrets.LETTERBOXD_USERNAME || 'Hayden0325' }}" >> .env
+          echo "TMDB_ACCESS_TOKEN=${{ secrets.TMDB_ACCESS_TOKEN }}" >> .env
+          echo "TMDB_ACCOUNT_OBJECT_ID=${{ secrets.TMDB_ACCOUNT_OBJECT_ID }}" >> .env
+          echo "TMDB_TV_LIST_ID=${{ secrets.TMDB_TV_LIST_ID }}" >> .env
 
       - name: Install Puppeteer Chrome
         run: npx puppeteer browsers install chrome
