@@ -39,9 +39,10 @@ jobs:
           echo "GOODREADS_USER_ID=${{ secrets.GOODREADS_USER_ID || '203812556' }}" >> .env
           echo "LETTERBOXD_USERNAME=${{ secrets.LETTERBOXD_USERNAME || 'Hayden0325' }}" >> .env
 
-      - name: Build static site
       - name: Install Puppeteer Chrome
         run: npx puppeteer browsers install chrome
+
+      - name: Build static site
         run: npx astro build
         env:
           ASTRO_TELEMETRY_DISABLED: '1'
