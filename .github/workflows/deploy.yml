@@ -37,11 +37,18 @@ jobs:
           echo "LASTFM_API_KEY=${{ secrets.LASTFM_API_KEY }}" >> .env
           echo "LASTFM_USERNAME=${{ secrets.LASTFM_USERNAME }}" >> .env
           echo "GOODREADS_USER_ID=${{ secrets.GOODREADS_USER_ID || '203812556' }}" >> .env
+          echo "LETTERBOXD_USERNAME=${{ secrets.LETTERBOXD_USERNAME || 'Hayden0325' }}" >> .env
 
       - name: Build static site
+      - name: Ensure Chrome for Letterboxd scraper
+        run: |
+          if [ ! -x /usr/bin/google-chrome ] && [ ! -x /usr/bin/google-chrome-stable ]; then
+            npx puppeteer browsers install chrome
+          fi
         run: npx astro build
         env:
           ASTRO_TELEMETRY_DISABLED: '1'
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

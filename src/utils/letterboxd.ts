@@ -65,6 +65,22 @@ async function scrapePage(browser: Awaited<ReturnType<Awaited<typeof import('pup
         const filmData = await page.evaluate(() => {
           const films: any[] = [];
           const reactComponents = document.querySelectorAll('.react-component[data-item-name]');
+            // Letterboxd renders each film rating in a sibling .poster-viewingdata
+            // element carrying the same film uid (film:<id>). Map uid -> stars here
+            // so each card carries its rating without an extra page per film.
+            const ratingsByFilmId = new Map<string, number>();
+            document.querySelectorAll('.poster-viewingdata[data-item-uid]').forEach((viewingData) => {
+              const uid = viewingData.getAttribute('data-item-uid') || '';
+              const idMatch = /film:(\d+)/.exec(uid);
+              if (!idMatch) return;
+              const ratingEl = viewingData.querySelector('.rating');
+              const ratingClass = ratingEl ? (ratingEl.getAttribute('class') || '') : '';
+              const ratedMatch = /rated-(\d+)/.exec(ratingClass);
+              if (ratedMatch) {
+                const halfStars = parseInt(ratedMatch[1], 10);
+                ratingsByFilmId.set(idMatch[1], halfStars / 2);
+              }
+            });
 
           reactComponents.forEach((container) => {
             const filmSlug = container.getAttribute('data-item-slug') || '';
@@ -109,6 +125,7 @@ async function scrapePage(browser: Awaited<ReturnType<Awaited<typeof import('pup
                 year,
                 link,
                 posterImage: posterUrl,
+                rating: ratingsByFilmId.get(filmId),
               });
             }
           });
@@ -145,6 +162,7 @@ async function scrapePage(browser: Awaited<ReturnType<Awaited<typeof import('pup
             releaseDate,
             posterImage: film.posterImage,
             link: film.link.startsWith('http') ? film.link : `https://letterboxd.com${film.link}`,
+            rating: film.rating,
           };
         });
 

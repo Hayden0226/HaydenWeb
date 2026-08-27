@@ -13,7 +13,7 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + Tailwind CSS 构
 - **Media**
   - **Books** — Goodreads 书架：已读 / 在读 / 想读
   - **Music** — Last.fm 最近播放、Top 艺人 / 歌曲 / 专辑 / 流派
-  - **Movies** — Letterboxd 观影记录（待配置）
+  - **Movies** — Letterboxd 观影记录（含评分）
   - **TV** — TMDB 追剧清单（待配置）
   - **Anime** — MyAnimeList 番剧记录（待配置）
 - **Games** — Steam / PSN / Nintendo 游戏数据（待配置）
@@ -26,7 +26,7 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + Tailwind CSS 构
 | --- | --- | --- |
 | Books | Goodreads 公开 RSS | ✅ 已启用 |
 | Music | Last.fm API + iTunes Search 封面 | ✅ 已启用 |
-| Movies | Letterboxd（Puppeteer 爬取） | ⏳ 待配置 |
+| Movies | Letterboxd（Puppeteer 爬取） | ✅ 已启用 |
 | TV | TMDB API | ⏳ 待配置 |
 | Anime | MyAnimeList API | ⏳ 待配置 |
 | Games | Steam / PSN / Nintendo / IGDB | ⏳ 待配置 |
