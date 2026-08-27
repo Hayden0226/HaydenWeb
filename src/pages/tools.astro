@@ -1,19 +1,22 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import MediaTools from '../components/MediaTools';
 ---
 
 <BaseLayout
   title="Toodles - Hayden"
-  description="My collection of handy little tools"
+  description="Media tools — audio, video and image conversion powered by FFmpeg.wasm, running entirely in your browser"
 >
-  <div class="max-w-4xl mx-auto">
+  <div class="max-w-7xl mx-auto">
     <div class="text-center mb-16">
       <h1 class="text-5xl font-bold mb-4" style="color: var(--text-primary);">
         Toodles
       </h1>
       <p class="text-lg" style="color: var(--text-secondary);">
-        My collection of handy little tools — coming soon.
+        Media Tools — 音频 / 视频 / 图片转换，全部在浏览器本地完成
       </p>
     </div>
+
+    <MediaTools client:load />
   </div>
 </BaseLayout>
