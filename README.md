@@ -14,7 +14,7 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + Tailwind CSS 构
   - **Books** — Goodreads 书架：已读 / 在读 / 想读
   - **Music** — Last.fm 最近播放、Top 艺人 / 歌曲 / 专辑 / 流派
   - **Movies** — Letterboxd 观影记录（含评分）
-  - **TV** — TMDB 追剧清单
+  - **TV** — TMDB 追剧（总览 / 收藏 / 待看）
   - **Anime** — MyAnimeList 番剧记录（待配置）
 - **Games** — Steam / PSN / Nintendo 游戏数据（待配置）
 - **Photography** — 跳转到 [visuals.haydenweb.com](https://visuals.haydenweb.com/)
@@ -27,7 +27,7 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + Tailwind CSS 构
 | Books | Goodreads 公开 RSS | ✅ 已启用 |
 | Music | Last.fm API + iTunes Search 封面 | ✅ 已启用 |
 | Movies | Letterboxd（Puppeteer 爬取） | ✅ 已启用 |
-| TV | TMDB API | ✅ 已启用 |
+| TV | TMDB API（总览 / 收藏 / 待看） | ✅ 已启用 |
 | Anime | MyAnimeList API | ⏳ 待配置 |
 | Games | Steam / PSN / Nintendo / IGDB | ⏳ 待配置 |
 
@@ -53,8 +53,8 @@ npm run dev
 | `GOODREADS_USER_ID` | Goodreads 用户 ID（Books 页） |
 | `LETTERBOXD_USERNAME` | Letterboxd 用户名（Movies 页） |
 | `TMDB_ACCESS_TOKEN` | TMDB v4 API Token（TV 页） |
-| `TMDB_ACCOUNT_OBJECT_ID` | TMDB v4 账户 Object ID（TV 页） |
-| `TMDB_TV_LIST_ID` | TMDB「看过的剧」列表 ID（TV 页） |
+| `TMDB_ACCOUNT_OBJECT_ID` | TMDB v4 账户 Object ID（可选，默认从 token 自动解码） |
+| `TMDB_TV_LIST_ID` | TMDB 自定义列表 ID（可选，展示没打分的剧） |
 | `MAL_CLIENT_ID` / `MAL_ACCESS_TOKEN` | MyAnimeList API（Anime 页） |
 | `STEAM_API_KEY` / `STEAM_ID` | Steam Web API（Games 页） |
 
