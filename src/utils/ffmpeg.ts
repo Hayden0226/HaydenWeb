@@ -1,6 +1,7 @@
 // Browser-side FFmpeg loader (FFmpeg.wasm)
-// The core is fetched at runtime from CDNs with multi-source fallback so the
-// ~30MB wasm never bloats the static site bundle.
+// The core is self-hosted under /ffmpeg/ and fetched same-origin first, so it
+// keeps working even when third-party CDNs are unreachable. CDNs remain as
+// fallbacks.
 
 import { toBlobURL } from '@ffmpeg/util';
 import type { FFmpeg } from '@ffmpeg/ffmpeg';
@@ -13,22 +14,28 @@ interface CoreSource {
   wasmURL: string;
 }
 
-// Order matters: tried in sequence until one loads successfully.
+// Order matters: same-origin (self-hosted) files first, then CDN fallbacks.
+const SITE_BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
 const CORE_SOURCES: CoreSource[] = [
   {
+    name: 'local',
+    coreURL: `${SITE_BASE}/ffmpeg/ffmpeg-core.js`,
+    wasmURL: `${SITE_BASE}/ffmpeg/ffmpeg-core.wasm`,
+  },
+  {
     name: 'jsdelivr',
-    coreURL: `https://cdn.jsdelivr.net/npm/@ffmpeg/core@${CORE_VERSION}/dist/umd/ffmpeg-core.js`,
-    wasmURL: `https://cdn.jsdelivr.net/npm/@ffmpeg/core@${CORE_VERSION}/dist/umd/ffmpeg-core.wasm`,
+    coreURL: `https://cdn.jsdelivr.net/npm/@ffmpeg/core@${CORE_VERSION}/dist/esm/ffmpeg-core.js`,
+    wasmURL: `https://cdn.jsdelivr.net/npm/@ffmpeg/core@${CORE_VERSION}/dist/esm/ffmpeg-core.wasm`,
   },
   {
     name: 'unpkg',
-    coreURL: `https://unpkg.com/@ffmpeg/core@${CORE_VERSION}/dist/umd/ffmpeg-core.js`,
-    wasmURL: `https://unpkg.com/@ffmpeg/core@${CORE_VERSION}/dist/umd/ffmpeg-core.wasm`,
+    coreURL: `https://unpkg.com/@ffmpeg/core@${CORE_VERSION}/dist/esm/ffmpeg-core.js`,
+    wasmURL: `https://unpkg.com/@ffmpeg/core@${CORE_VERSION}/dist/esm/ffmpeg-core.wasm`,
   },
   {
-    name: 'npmmirror',
-    coreURL: `https://registry.npmmirror.com/@ffmpeg/core/${CORE_VERSION}/files/dist/umd/ffmpeg-core.js`,
-    wasmURL: `https://registry.npmmirror.com/@ffmpeg/core/${CORE_VERSION}/files/dist/umd/ffmpeg-core.wasm`,
+    name: 'jsdelivr-fastly',
+    coreURL: `https://fastly.jsdelivr.net/npm/@ffmpeg/core@${CORE_VERSION}/dist/esm/ffmpeg-core.js`,
+    wasmURL: `https://fastly.jsdelivr.net/npm/@ffmpeg/core@${CORE_VERSION}/dist/esm/ffmpeg-core.wasm`,
   },
 ];
 
