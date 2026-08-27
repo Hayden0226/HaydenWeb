@@ -158,10 +158,13 @@ export default function MediaTools() {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Category tabs */}
-      <div className="flex flex-wrap gap-2 mb-10 justify-center">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
         {(Object.keys(categoryLabels) as Category[]).map((key) => {
           const active = category === key;
           const count = MEDIA_TOOLS.filter((t) => t.category === key).length;
+          const icon = key === 'audio' ? '🎵' : key === 'video' ? '🎬' : '🖼️';
+          const title = key === 'audio' ? 'Audio' : key === 'video' ? 'Video' : 'Image';
+          const desc = key === 'audio' ? '音频转换' : key === 'video' ? '视频转换' : '图片转换';
           return (
             <button
               key={key}
@@ -169,13 +172,26 @@ export default function MediaTools() {
                 setCategory(key);
                 setSelected(null);
               }}
-              className="px-5 py-2 rounded-full border transition-all cursor-pointer hover:opacity-80 active:scale-95"
-              style={active
-                ? { backgroundColor: 'var(--accent)', borderColor: 'var(--accent)', color: 'var(--bg-primary)' }
-                : { backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+              className="flex flex-col items-center justify-center gap-2 p-8 rounded-2xl border transition-all cursor-pointer hover:-translate-y-1 hover:opacity-95 active:scale-[0.98]"
+              style={{
+                backgroundColor: active
+                  ? 'color-mix(in srgb, var(--accent) 14%, var(--bg-secondary))'
+                  : 'var(--bg-secondary)',
+                borderColor: active ? 'var(--accent)' : 'var(--border)',
+                color: 'var(--text-primary)',
+              }}
             >
-              {categoryLabels[key]}
-              <span className="ml-2 text-xs opacity-80">({count})</span>
+              <span className="text-5xl leading-none mb-1">{icon}</span>
+              <span className="text-xl font-bold" style={{ color: active ? 'var(--accent)' : 'var(--text-primary)' }}>
+                {title}
+              </span>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{desc}</span>
+              <span
+                className="mt-2 text-xs px-3 py-1 rounded-full border"
+                style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+              >
+                {count} 个工具
+              </span>
             </button>
           );
         })}
