@@ -1,6 +1,7 @@
 // TMDB TV integration
-// Reads the "TV Shows I've Watched" list and show ratings from the user's TMDB
-// account. Uses a v4 user access token, which is long-lived — no refresh flow needed.
+// Reads the user's watched/rated TV, favorites and watchlist from TMDB v4.
+// The access token embeds the account object id in its JWT "sub" claim, so it
+// is derived automatically when TMDB_ACCOUNT_OBJECT_ID is not provided.
 
 import { fetchWithRetry } from './retry';
 import { FileCache } from './cache';
@@ -32,7 +33,7 @@ const TMDB_TV_LIST_ID = import.meta.env.TMDB_TV_LIST_ID;
 const log = createLogger('TMDB');
 const cache = new FileCache<TmdbTVData>('tmdb-tv-data', { ttl: 24 * 60 * 60 * 1000 });
 
-// TV summary object as returned in v4 list/rated results
+// TV summary object as returned in v4 list/rated/favorite/watchlist results
 interface TmdbTVResult {
   id: number;
   name: string;
@@ -55,7 +56,9 @@ export interface TVShow {
 }
 
 export interface TmdbTVData {
-  shows: TVShow[];
+  overview: TVShow[];
+  favorites: TVShow[];
+  watchlist: TVShow[];
   stats: {
     totalShows: number;
     rated: number;
@@ -104,8 +107,43 @@ async function fetchAllPages(endpoint: string): Promise<TmdbTVResult[]> {
   return results;
 }
 
+// Some optional account endpoints (favorite) return 404 when the user has no
+// entries. Treat that as "empty" rather than a hard failure.
+async function safeFetchAllPages(endpoint: string): Promise<TmdbTVResult[]> {
+  try {
+    return await fetchAllPages(endpoint);
+  } catch (error) {
+    if (/404/.test(String(error))) {
+      log.info(`TMDB endpoint returned 404 (likely empty): ${endpoint}`);
+      return [];
+    }
+    throw error;
+  }
+}
+
+function toShows(items: TmdbTVResult[], ratingsMap: Map<number, number>): TVShow[] {
+  return items
+    .filter(item => item.media_type !== 'movie')
+    .map(item => ({
+      title: item.name,
+      year: item.first_air_date ? parseInt(item.first_air_date.slice(0, 4), 10) : 0,
+      tmdbId: item.id,
+      posterImage: item.poster_path
+        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+        : '',
+      firstAiredAt: item.first_air_date ? new Date(item.first_air_date) : undefined,
+      rating: ratingsMap.get(item.id),
+      link: `https://www.themoviedb.org/tv/${item.id}`,
+    }));
+}
+
+function byFirstAiredDesc(a: TVShow, b: TVShow): number {
+  return (b.firstAiredAt?.getTime() || 0) - (a.firstAiredAt?.getTime() || 0);
+}
+
 /**
- * Get all TV data for display: the watched list joined with account ratings
+ * Get all TV data for display: overview (watched/rated, plus an optional list),
+ * favorites and watchlist.
  */
 export async function getTmdbTVData(): Promise<TmdbTVData | null> {
   // Check cache first
@@ -122,13 +160,13 @@ export async function getTmdbTVData(): Promise<TmdbTVData | null> {
   log.info('Fetching TV shows from TMDB...');
 
   try {
-    // Fetch the watched list (if configured) and the account's show ratings in parallel.
-    // Ratings alone count as "watched", so the page still fills up when a list is empty.
-    const [listItems, ratedShows] = await Promise.all([
+    const [listItems, ratedShows, favoriteShows, watchlistShows] = await Promise.all([
       TMDB_TV_LIST_ID
         ? fetchAllPages(`/list/${TMDB_TV_LIST_ID}`)
         : Promise.resolve([]),
       fetchAllPages(`/account/${TMDB_ACCOUNT_OBJECT_ID}/tv/rated`),
+      safeFetchAllPages(`/account/${TMDB_ACCOUNT_OBJECT_ID}/tv/favorite`),
+      safeFetchAllPages(`/account/${TMDB_ACCOUNT_OBJECT_ID}/tv/watchlist`),
     ]);
 
     const ratingsMap = new Map<number, number>();
@@ -138,9 +176,7 @@ export async function getTmdbTVData(): Promise<TmdbTVData | null> {
       }
     }
 
-    // Merge list + rated into a de-duplicated set keyed by TMDB id. List entries
-    // win (they may include unwatched-but-listed shows); rated shows not already
-    // present are appended so a rating counts as a watched show.
+    // Overview = de-duplicated watched/rated set, plus any optional list entries.
     const showMap = new Map<number, TmdbTVResult>();
     for (const item of listItems) {
       if (item.media_type !== 'movie') showMap.set(item.id, item);
@@ -151,37 +187,27 @@ export async function getTmdbTVData(): Promise<TmdbTVData | null> {
       }
     }
 
-    if (!showMap.size) {
-      log.error('No shows found in TMDB list or ratings');
+    const overview = toShows([...showMap.values()], ratingsMap).sort(byFirstAiredDesc);
+    const favorites = toShows(favoriteShows, ratingsMap).sort(byFirstAiredDesc);
+    const watchlist = toShows(watchlistShows, ratingsMap).sort(byFirstAiredDesc);
+
+    if (!overview.length && !favorites.length && !watchlist.length) {
+      log.error('No shows found in TMDB lists/ratings');
       return null;
     }
 
-    const shows: TVShow[] = [...showMap.values()].map(item => ({
-      title: item.name,
-      year: item.first_air_date ? parseInt(item.first_air_date.slice(0, 4), 10) : 0,
-      tmdbId: item.id,
-      posterImage: item.poster_path
-        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-        : '',
-      firstAiredAt: item.first_air_date ? new Date(item.first_air_date) : undefined,
-      rating: ratingsMap.get(item.id),
-      link: `https://www.themoviedb.org/tv/${item.id}`,
-    }));
-
-    // Sort by first air date (newest first) — the site's default sort order
-    shows.sort((a, b) => (b.firstAiredAt?.getTime() || 0) - (a.firstAiredAt?.getTime() || 0));
-
-    // Calculate stats
-    const ratedList = shows.filter(s => s.rating && s.rating > 0);
-    const averageRating = ratedList.length > 0
-      ? ratedList.reduce((sum, s) => sum + (s.rating || 0), 0) / ratedList.length
+    const ratedOverview = overview.filter(s => s.rating && s.rating > 0);
+    const averageRating = ratedOverview.length > 0
+      ? ratedOverview.reduce((sum, s) => sum + (s.rating || 0), 0) / ratedOverview.length
       : 0;
 
     const data: TmdbTVData = {
-      shows,
+      overview,
+      favorites,
+      watchlist,
       stats: {
-        totalShows: shows.length,
-        rated: ratedList.length,
+        totalShows: overview.length,
+        rated: ratedOverview.length,
         averageRating: Math.round(averageRating * 10) / 10,
       },
       timestamp: Date.now(),
@@ -190,7 +216,9 @@ export async function getTmdbTVData(): Promise<TmdbTVData | null> {
     // Save to cache
     await cache.set(data);
 
-    log.info(`Fetched ${shows.length} shows from TMDB (${ratedList.length} rated)`);
+    log.info(
+      `Fetched ${overview.length} overview / ${favorites.length} favorites / ${watchlist.length} watchlist from TMDB`
+    );
 
     return data;
   } catch (error) {

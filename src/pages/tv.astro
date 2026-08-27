@@ -1,31 +1,38 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import TVFilter from '../components/TVFilter';
+import TVTabs from '../components/TVTabs';
 import StatGrid from '../components/StatGrid.astro';
 import { getTmdbTVData } from '../utils/tmdb';
 
 // Fetch TV data from TMDB at build time
 const tvData = await getTmdbTVData();
 
-// Map shows to the format expected by the UI
-let shows = [];
-if (tvData && tvData.shows.length > 0) {
-  shows = tvData.shows.map(show => ({
-    data: {
-      title: show.title,
-      year: show.year,
-      posterImage: show.posterImage,
-      firstAiredAt: show.firstAiredAt,
-      rating: show.rating,
-      link: show.link,
-    }
-  }));
+// Map shows to the format expected by the tabbed UI
+const toShow = (show: any) => ({
+  data: {
+    title: show.title,
+    year: show.year,
+    posterImage: show.posterImage,
+    firstAiredAt: show.firstAiredAt,
+    rating: show.rating,
+    link: show.link,
+  }
+});
+
+let overview: any[] = [];
+let favorites: any[] = [];
+let watchlist: any[] = [];
+if (tvData) {
+  overview = tvData.overview.map(toShow);
+  favorites = tvData.favorites.map(toShow);
+  watchlist = tvData.watchlist.map(toShow);
 }
+const hasAny = overview.length > 0 || favorites.length > 0 || watchlist.length > 0;
 ---
 
 <BaseLayout
   title="TV Shows - Hayden"
-  description="TV shows I've watched"
+  description="TV shows I have watched, favorites and watchlist"
 >
   <div class="max-w-7xl mx-auto">
     <div class="text-center mb-16">
@@ -34,28 +41,19 @@ if (tvData && tvData.shows.length > 0) {
       </h1>
     </div>
 
-    {shows.length > 0 && (
+    {hasAny && (
       <section class="mb-20">
-        <div class="flex items-center justify-between mb-8">
-          <h2 class="text-3xl font-bold" style="color: var(--text-primary);">
-            My Watch History
-          </h2>
-          <span class="text-sm" style="color: var(--text-secondary);">
-            {shows.length} {shows.length === 1 ? 'show' : 'shows'}
-          </span>
-        </div>
-
-        <TVFilter client:load shows={shows} />
+        <TVTabs client:load overview={overview} favorites={favorites} watchlist={watchlist} />
 
         <StatGrid title="Viewing Stats" stats={[
-          { value: tvData?.stats.totalShows || 0, label: 'Total Shows' },
-          { value: tvData?.stats.rated || 0, label: 'Rated' },
-          { value: tvData?.stats.averageRating || 0, label: 'Avg Rating' },
+          { value: tvData?.stats.totalShows || 0, label: "Total Shows" },
+          { value: tvData?.stats.rated || 0, label: "Rated" },
+          { value: tvData?.stats.averageRating || 0, label: "Avg Rating" },
         ]} />
       </section>
     )}
 
-    {shows.length === 0 && (
+    {!hasAny && (
       <div class="text-center py-12">
         <p class="text-lg" style="color: var(--text-secondary);">
           Couldn't load TV show data right now — check back soon.
