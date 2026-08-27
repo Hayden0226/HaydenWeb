@@ -165,7 +165,7 @@ export async function getTmdbTVData(): Promise<TmdbTVData | null> {
         ? fetchAllPages(`/list/${TMDB_TV_LIST_ID}`)
         : Promise.resolve([]),
       fetchAllPages(`/account/${TMDB_ACCOUNT_OBJECT_ID}/tv/rated`),
-      safeFetchAllPages(`/account/${TMDB_ACCOUNT_OBJECT_ID}/tv/favorite`),
+      safeFetchAllPages(`/account/${TMDB_ACCOUNT_OBJECT_ID}/tv/favorites`),
       safeFetchAllPages(`/account/${TMDB_ACCOUNT_OBJECT_ID}/tv/watchlist`),
     ]);
 
