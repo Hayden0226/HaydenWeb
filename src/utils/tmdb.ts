@@ -95,7 +95,7 @@ export async function getTmdbTVData(): Promise<TmdbTVData | null> {
     return cached;
   }
 
-  if (!TMDB_ACCESS_TOKEN || !TMDB_ACCOUNT_OBJECT_ID || !TMDB_TV_LIST_ID) {
+  if (!TMDB_ACCESS_TOKEN || !TMDB_ACCOUNT_OBJECT_ID) {
     log.info('TMDB credentials not configured, skipping...');
     return null;
   }
@@ -103,16 +103,14 @@ export async function getTmdbTVData(): Promise<TmdbTVData | null> {
   log.info('Fetching TV shows from TMDB...');
 
   try {
-    // Fetch the watched list and the account's show ratings in parallel
+    // Fetch the watched list (if configured) and the account's show ratings in parallel.
+    // Ratings alone count as "watched", so the page still fills up when a list is empty.
     const [listItems, ratedShows] = await Promise.all([
-      fetchAllPages(`/list/${TMDB_TV_LIST_ID}`),
+      TMDB_TV_LIST_ID
+        ? fetchAllPages(`/list/${TMDB_TV_LIST_ID}`)
+        : Promise.resolve([]),
       fetchAllPages(`/account/${TMDB_ACCOUNT_OBJECT_ID}/tv/rated`),
     ]);
-
-    if (!listItems.length) {
-      log.error('No shows found in TMDB list');
-      return null;
-    }
 
     const ratingsMap = new Map<number, number>();
     for (const rated of ratedShows) {
@@ -121,19 +119,35 @@ export async function getTmdbTVData(): Promise<TmdbTVData | null> {
       }
     }
 
-    const shows: TVShow[] = listItems
-      .filter(item => item.media_type !== 'movie')
-      .map(item => ({
-        title: item.name,
-        year: item.first_air_date ? parseInt(item.first_air_date.slice(0, 4), 10) : 0,
-        tmdbId: item.id,
-        posterImage: item.poster_path
-          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-          : '',
-        firstAiredAt: item.first_air_date ? new Date(item.first_air_date) : undefined,
-        rating: ratingsMap.get(item.id),
-        link: `https://www.themoviedb.org/tv/${item.id}`,
-      }));
+    // Merge list + rated into a de-duplicated set keyed by TMDB id. List entries
+    // win (they may include unwatched-but-listed shows); rated shows not already
+    // present are appended so a rating counts as a watched show.
+    const showMap = new Map<number, TmdbTVResult>();
+    for (const item of listItems) {
+      if (item.media_type !== 'movie') showMap.set(item.id, item);
+    }
+    for (const rated of ratedShows) {
+      if (rated.media_type !== 'movie' && !showMap.has(rated.id)) {
+        showMap.set(rated.id, rated);
+      }
+    }
+
+    if (!showMap.size) {
+      log.error('No shows found in TMDB list or ratings');
+      return null;
+    }
+
+    const shows: TVShow[] = [...showMap.values()].map(item => ({
+      title: item.name,
+      year: item.first_air_date ? parseInt(item.first_air_date.slice(0, 4), 10) : 0,
+      tmdbId: item.id,
+      posterImage: item.poster_path
+        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+        : '',
+      firstAiredAt: item.first_air_date ? new Date(item.first_air_date) : undefined,
+      rating: ratingsMap.get(item.id),
+      link: `https://www.themoviedb.org/tv/${item.id}`,
+    }));
 
     // Sort by first air date (newest first) — the site's default sort order
     shows.sort((a, b) => (b.firstAiredAt?.getTime() || 0) - (a.firstAiredAt?.getTime() || 0));
