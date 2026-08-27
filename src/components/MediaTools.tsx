@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   CATEGORY_LABELS as categoryLabels,
   convertWithTool,
@@ -85,6 +85,8 @@ export default function MediaTools() {
   const [result, setResult] = useState<ConvertResult | null>(null);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const tools = useMemo(() => MEDIA_TOOLS.filter((tool) => tool.category === category), [category]);
 
@@ -113,6 +115,16 @@ export default function MediaTools() {
     setStatus('idle');
     setError('');
   }
+
+  useEffect(() => {
+    if (!file || !file.type.startsWith('image/')) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
   async function handleConvert() {
     if (!file || !selected) return;
@@ -211,15 +223,21 @@ export default function MediaTools() {
 
           {/* File drop zone */}
           <div
-            onDragOver={(e) => e.preventDefault()}
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragEnter={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
             onDrop={(e) => {
               e.preventDefault();
+              setIsDragging(false);
               const dropped = e.dataTransfer.files?.[0] ?? null;
               if (dropped) setInputFile(dropped);
             }}
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-xl border-2 border-dashed p-10 text-center mb-6 cursor-pointer transition-colors"
-            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-secondary)' }}
+            className="rounded-xl border-2 border-dashed p-10 text-center mb-6 cursor-pointer transition-all"
+            style={{
+              borderColor: isDragging || file ? 'var(--accent)' : 'var(--border)',
+              backgroundColor: file ? 'color-mix(in srgb, var(--accent) 8%, var(--bg-secondary))' : 'var(--bg-secondary)',
+            }}
           >
             <input
               ref={fileInputRef}
@@ -228,13 +246,26 @@ export default function MediaTools() {
               className="hidden"
               onChange={(e) => setInputFile(e.target.files?.[0] ?? null)}
             />
-            <div className="text-3xl mb-2">📁</div>
-            <p style={{ color: 'var(--text-primary)' }}>
-              {file ? '点击或拖入新文件替换' : '点击选择文件，或将文件拖到这里'}
-            </p>
-            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-              支持 {selected.accept}
-            </p>
+            {file ? (
+              <div className="flex flex-col items-center gap-1" style={{ color: 'var(--text-primary)' }}>
+                {previewUrl ? (
+                  <img src={previewUrl} alt="预览" className="w-28 h-28 object-contain rounded-lg mb-2" />
+                ) : (
+                  <div className="text-3xl mb-1">📄</div>
+                )}
+                <div className="font-semibold">{file.name}</div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {(file.size / 1024 / 1024).toFixed(2)} MB · {file.type || '未知类型'}
+                </div>
+                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>点击或拖入新文件替换</div>
+              </div>
+            ) : (
+              <>
+                <div className="text-3xl mb-2">📁</div>
+                <p style={{ color: 'var(--text-primary)' }}>点击选择文件，或将文件拖到这里</p>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>支持 {selected.accept}</p>
+              </>
+            )}
           </div>
 
           {/* Options */}
