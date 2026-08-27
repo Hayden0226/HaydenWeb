@@ -41,7 +41,7 @@ function OptionControl({
       <select
         value={String(value ?? option.default ?? '0')}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 rounded-lg border outline-none"
+        className="w-full px-3 py-2 rounded-lg border outline-none focus:outline-none focus:border-[var(--accent)]"
         style={{
           backgroundColor: 'var(--bg-secondary)',
           borderColor: 'var(--border)',
@@ -64,7 +64,7 @@ function OptionControl({
       step={option.step}
       value={Number(value ?? option.default ?? 0)}
       onChange={(e) => onChange(e.target.value === '' ? 0 : Number(e.target.value))}
-      className="w-full px-3 py-2 rounded-lg border outline-none"
+      className="w-full px-3 py-2 rounded-lg border outline-none focus:outline-none focus:border-[var(--accent)]"
       style={{
         backgroundColor: 'var(--bg-secondary)',
         borderColor: 'var(--border)',
@@ -169,7 +169,7 @@ export default function MediaTools() {
                 setCategory(key);
                 setSelected(null);
               }}
-              className="px-5 py-2 rounded-full border transition-colors cursor-pointer"
+              className="px-5 py-2 rounded-full border transition-all cursor-pointer hover:opacity-80 active:scale-95"
               style={active
                 ? { backgroundColor: 'var(--accent)', borderColor: 'var(--accent)', color: 'var(--bg-primary)' }
                 : { backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
@@ -188,7 +188,7 @@ export default function MediaTools() {
             <button
               key={tool.id}
               onClick={() => chooseTool(tool)}
-              className="p-4 rounded-xl border text-left transition-all hover:-translate-y-0.5 cursor-pointer"
+              className="p-4 rounded-xl border text-left transition-all hover:-translate-y-0.5 hover:opacity-90 active:scale-95 cursor-pointer"
               style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
             >
               <div className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{tool.label}</div>
@@ -205,7 +205,7 @@ export default function MediaTools() {
             <div>
               <button
                 onClick={() => { setSelected(null); setResult(null); }}
-                className="text-sm mb-2 cursor-pointer hover:underline"
+                className="text-sm mb-2 cursor-pointer hover:underline hover:opacity-80"
                 style={{ color: 'var(--accent)' }}
               >
                 ← 返回工具列表
@@ -214,9 +214,12 @@ export default function MediaTools() {
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{selected.subtitle}</p>
             </div>
             {file && (
-              <div className="text-right text-sm max-w-[220px] truncate" style={{ color: 'var(--text-secondary)' }}>
-                <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{file.name}</div>
-                <div>{(file.size / 1024 / 1024).toFixed(2)} MB</div>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+                <span className="text-xl" style={{ color: 'var(--accent)' }}>📎</span>
+                <div className="text-right text-sm max-w-[220px]">
+                  <div className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{file.name}</div>
+                  <div style={{ color: 'var(--text-secondary)' }}>{(file.size / 1024 / 1024).toFixed(2)} MB · {file.type || '未知类型'}</div>
+                </div>
               </div>
             )}
           </div>
@@ -288,7 +291,7 @@ export default function MediaTools() {
           <button
             onClick={handleConvert}
             disabled={!file || isBusy}
-            className="w-full py-3 rounded-xl font-semibold transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full py-3 rounded-xl font-semibold transition-all cursor-pointer hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
             style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-primary)' }}
           >
             {isBusy ? (status === 'loading' ? '正在加载 FFmpeg 引擎（首次约需 10-30 秒）…' : `转换中 ${percent}%`) : '开始转换'}
@@ -329,7 +332,7 @@ export default function MediaTools() {
                   <button
                     key={index}
                     onClick={() => download(blob, result.names[index])}
-                    className="px-4 py-2 rounded-lg font-medium cursor-pointer"
+                    className="px-4 py-2 rounded-lg font-medium transition-all cursor-pointer hover:opacity-90 active:scale-95"
                     style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-primary)' }}
                   >
                     ⬇️ 下载 {result.names[index]}
