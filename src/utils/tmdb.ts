@@ -7,7 +7,26 @@ import { FileCache } from './cache';
 import { createLogger } from './logger';
 
 const TMDB_ACCESS_TOKEN = import.meta.env.TMDB_ACCESS_TOKEN;
-const TMDB_ACCOUNT_OBJECT_ID = import.meta.env.TMDB_ACCOUNT_OBJECT_ID;
+
+// The v4 access token embeds the account object id in its JWT "sub" claim, so it
+// can be derived automatically when TMDB_ACCOUNT_OBJECT_ID is not provided (or
+// set incorrectly). This removes a common source of 404s on account endpoints.
+function extractAccountObjectId(token?: string): string | undefined {
+  if (!token) return undefined;
+  const payloadSegment = token.split('.')[1];
+  if (!payloadSegment) return undefined;
+  try {
+    const base64 = payloadSegment.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded));
+    return typeof payload.sub === 'string' ? payload.sub : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+const TMDB_ACCOUNT_OBJECT_ID =
+  extractAccountObjectId(TMDB_ACCESS_TOKEN) || import.meta.env.TMDB_ACCOUNT_OBJECT_ID;
 const TMDB_TV_LIST_ID = import.meta.env.TMDB_TV_LIST_ID;
 
 const log = createLogger('TMDB');
