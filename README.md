@@ -65,7 +65,7 @@ npm run dev
 1. 仓库 `Settings → Pages → Source` 选择 **GitHub Actions**
 2. 推送到 `main` 自动构建部署
 3. 工作流每 6 小时重新构建一次，保持数据新鲜
-4. 环境变量由工作流写入 `.env`：`LASTFM_*` / `TMDB_*` 从 Actions Secrets 读取，`GOODREADS_USER_ID` / `LETTERBOXD_USERNAME` 内置默认值
+4. 环境变量由工作流写入 `.env`：`LASTFM_*` / `TMDB_*` / `STEAM_API_KEY` / `STEAM_ID` 从 Actions Secrets 读取，`GOODREADS_USER_ID` / `LETTERBOXD_USERNAME` / `ANILIST_USERNAME` 内置默认值
 
 > 自定义域名：`public/CNAME` 指向 `i.haydenweb.com`，DNS 已配置 CNAME 记录 `i` → `Hayden0226.github.io`。
 
