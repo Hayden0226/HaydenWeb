@@ -16,9 +16,7 @@ export default function AnimeTabs({ overview, favourites, watchlist }: Props) {
         { id: 'watchlist', label: '待看 Watchlist' },
       ]}
       groups={{ overview, favourites, watchlist }}
-      renderGrid={(items, activeId) => (
-        <AnimeFilter anime={items} defaultStatus={activeId === 'overview' ? 'completed' : 'all'} />
-      )}
+      renderGrid={(items) => <AnimeFilter anime={items} defaultStatus="all" />}
     />
   );
 }
