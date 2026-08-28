@@ -49,7 +49,7 @@ export default function GameCard({ game }: GameCardProps) {
         className="absolute -inset-3 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
         style={{
           background: `radial-gradient(ellipse at 50% 100%, ${glowColor}59, transparent 65%)`,
-          filter: 'blur(18px)',
+          filter: 'blur(10px)',
         }}
       />
 
