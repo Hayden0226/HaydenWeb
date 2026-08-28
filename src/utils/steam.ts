@@ -46,12 +46,43 @@ export interface SteamAchievementInfo {
   total: number;
 }
 
+export interface SteamAchievement {
+  apiname: string;
+  title: string;
+  description: string;
+  icon: string;
+  iconGray: string;
+  achieved: boolean;
+  unlockTime?: number;
+  hidden?: boolean;
+}
+
+export interface SteamGlobalAchievement {
+  apiname: string;
+  title: string;
+  percent: number;
+}
+
+export interface SteamAchievementDetails {
+  achievements: SteamAchievement[];
+  global: SteamGlobalAchievement[];
+}
+
 interface SteamAchievementsData {
   games: Record<string, SteamAchievementInfo>;
   timestamp: number;
 }
 
 const achievementsCache = new FileCache<SteamAchievementsData>('steam-achievements', {
+  ttl: 7 * 24 * 60 * 60 * 1000,
+});
+
+interface SteamAchievementDetailsData {
+  games: Record<string, SteamAchievementDetails>;
+  timestamp: number;
+}
+
+const achievementDetailsCache = new FileCache<SteamAchievementDetailsData>('steam-achievement-details-v2', {
   ttl: 7 * 24 * 60 * 60 * 1000,
 });
 
@@ -109,6 +140,114 @@ export async function getSteamAchievements(appid: number): Promise<SteamAchievem
       return info;
     } catch (error) {
       log.error(`Error fetching achievements for app ${appid}:`, error);
+      return null;
+    }
+  });
+}
+
+interface SchemaAchievement {
+  apiname?: string;
+  name?: string;
+  displayName?: string;
+  desc?: string;
+  description?: string;
+  icon?: string;
+  icongray?: string;
+  hidden?: number;
+}
+
+/**
+ * Fetch full achievement details (name, description, icons, unlock status,
+ * hidden flag) plus global unlock percentages for a single game by merging
+ * GetSchemaForGame + GetPlayerAchievements + GetGlobalAchievementPercentagesForApp.
+ * Localized to Simplified Chinese when the game ships a zh-CN schema.
+ */
+export async function getSteamAchievementDetails(appid: number): Promise<SteamAchievementDetails | null> {
+  if (!STEAM_API_KEY || !STEAM_ID) {
+    return null;
+  }
+
+  return achievementsLimit(async () => {
+    const key = String(appid);
+    const cached = await achievementDetailsCache.get();
+    if (cached?.games?.[key]) {
+      return cached.games[key];
+    }
+
+    try {
+      const [schemaRes, playerRes, globalRes] = await Promise.all([
+        fetchWithRetry(
+          `${BASE_URL}/ISteamUserStats/GetSchemaForGame/v2/?key=${STEAM_API_KEY}&appid=${appid}&l=schinese&format=json`,
+          undefined,
+          { maxRetries: 2, initialDelayMs: 1000 }
+        ),
+        fetchWithRetry(
+          `${BASE_URL}/ISteamUserStats/GetPlayerAchievements/v0001/?appid=${appid}&key=${STEAM_API_KEY}&steamid=${STEAM_ID}&format=json`,
+          undefined,
+          { maxRetries: 2, initialDelayMs: 1000 }
+        ),
+        fetchWithRetry(
+          `${BASE_URL}/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid=${appid}&format=json`,
+          undefined,
+          { maxRetries: 2, initialDelayMs: 1000 }
+        ),
+      ]);
+
+      const schema = schemaRes.ok ? (await schemaRes.json()).game?.availableGameStats?.achievements as SchemaAchievement[] | undefined : undefined;
+      const playerData = await playerRes.json();
+      const playerAchievements = playerData.playerstats;
+      if (!playerAchievements || playerAchievements.success === false) {
+        return null;
+      }
+
+      const schemaMap = new Map<string, SchemaAchievement>();
+      for (const item of schema ?? []) {
+        const id = item.apiname || item.name || '';
+        if (id) schemaMap.set(String(id).toLowerCase(), item);
+      }
+
+      const achievements: SteamAchievement[] = (playerAchievements.achievements || []).map((entry: { apiname: string; achieved?: boolean; unlocktime?: number }) => {
+        const s = schemaMap.get(String(entry.apiname).toLowerCase());
+        return {
+          apiname: entry.apiname,
+          title: s?.displayName || s?.name || entry.apiname,
+          description: s?.description || s?.desc || '',
+          icon: s?.icon || '',
+          iconGray: s?.icongray || '',
+          achieved: !!entry.achieved,
+          unlockTime: entry.unlocktime,
+          hidden: !!s?.hidden,
+        };
+      }).filter((d: SteamAchievement) => d.apiname);
+
+      const globalPercent = new Map<string, number>();
+      if (globalRes.ok) {
+        const globalData = await globalRes.json();
+        const list = globalData.achievementpercentages?.achievements ?? [];
+        for (const item of list) {
+          if (item?.name != null) {
+            globalPercent.set(String(item.name).toLowerCase(), Number(item.percent));
+          }
+        }
+      }
+
+      const global: SteamGlobalAchievement[] = achievements.map((a) => ({
+        apiname: a.apiname,
+        title: a.title,
+        percent: globalPercent.get(a.apiname.toLowerCase()) ?? 0,
+      }));
+
+      const details: SteamAchievementDetails = { achievements, global };
+      const all: SteamAchievementDetailsData = {
+        ...(cached ?? { games: {} }),
+        games: { ...(cached?.games ?? {}), [key]: details },
+        timestamp: Date.now(),
+      };
+      await achievementDetailsCache.set(all);
+      log.info(`Fetched achievement details for app ${appid}: ${achievements.length} achievements, ${global.filter((g) => g.percent > 0).length} with global data`);
+      return details;
+    } catch (error) {
+      log.error(`Error fetching achievement details for app ${appid}:`, error);
       return null;
     }
   });

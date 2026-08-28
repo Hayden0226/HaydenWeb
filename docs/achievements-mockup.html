@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Games 成就详情面板 · 成果示意图</title>
+<style>
+:root{--bg:#fafaf9;--bg2:#f5f5f4;--card:#fff;--t1:#1c1917;--t2:#78716c;--accent:#0c4a6e;--border:#e7e5e4;--font:'Georgia','Cambria','Times New Roman',serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);padding:36px 22px 80px}
+.wrap{max-width:1100px;margin:0 auto}
+h1{font-size:26px;margin-bottom:4px}
+.sub{color:var(--t2);font-size:14px;margin-bottom:24px}
+.note{font-size:13px;color:var(--t2);border:1px dashed var(--border);padding:10px 14px;border-radius:4px;margin-bottom:26px}
+.stats{display:flex;gap:36px;padding:16px 0 20px;border-bottom:1px solid var(--border);margin-bottom:26px}
+.stats b{display:block;font-size:30px;color:var(--accent)}
+.stats span{font-size:13px;color:var(--t2)}
+.st{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.st h3{font-size:20px}.st span{color:var(--t2);font-size:13px}
+.row{display:flex;gap:18px;overflow-x:auto;padding-bottom:14px;scrollbar-width:none}
+.row::-webkit-scrollbar{display:none}
+.card{width:170px;flex-shrink:0;cursor:pointer}
+.cover{position:relative;width:100%;aspect-ratio:2/3;border-radius:4px;overflow:hidden;border:1px solid var(--border);background:#eceae6}
+.cover img{width:100%;height:100%;object-fit:contain;display:block}
+.badge{position:absolute;top:6px;right:6px;background:#1b2838;color:#fff;font-size:10px;padding:2px 6px;border-radius:2px}
+.halo{position:absolute;inset:-16px;opacity:0;transition:.3s;filter:blur(14px);pointer-events:none;z-index:-1;background:radial-gradient(ellipse at 50% 50%,rgba(93,97,94,.35),transparent 80%)}
+.card:hover .halo,.card.on .halo{opacity:1}
+.card.on .cover{outline:2px solid var(--accent)}
+.name{font-size:12px;margin-top:8px}
+.panel{display:none;margin-top:34px;border:1px solid var(--border);border-radius:4px;background:var(--bg2);padding:24px}
+.panel.on{display:block}
+.ph{display:flex;justify-content:space-between;gap:16px;margin-bottom:20px}
+.ph h3{font-size:22px}
+.meta{font-size:13px;color:var(--t2);margin-top:4px}
+.bar{height:8px;width:280px;max-width:100%;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.cls{background:var(--bg);border:1px solid var(--border);color:var(--t2);font-size:13px;padding:6px 12px;border-radius:4px;cursor:pointer;align-self:flex-start}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+.ach{display:flex;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:10px 12px}
+.ach.lock{opacity:.55}
+.ic{width:42px;height:42px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:#e7e5e4}
+.ic.on{background:#dbeafe}
+.ach h4{font-size:14px;margin-bottom:2px}
+.ach p{font-size:12px;color:var(--t2);line-height:1.45}
+.ach .dt{font-size:12px;color:var(--accent);margin-top:4px}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Games — 成就详情面板</h1>
+<div class="sub">点击 Steam 游戏卡片 → 页面下方展开该游戏的成就详情（类 Steam 库「查看成就」）</div>
+<div class="note">成果示意图：封面为真实 Steam 图，成就为演示数据；最终以真实成就为准。点卡片即可体验交互。</div>
+<div class="stats"><div><b>43</b><span>Total Games</span></div><div><b>746h</b><span>Hours Played</span></div><div><b>31</b><span>Games Played</span></div></div>
+<div class="st"><h3>Recent Games</h3><span>10 games</span></div>
+<div class="row" id="row">
+</div>
+<div class="panel" id="panel">
+<div class="ph"><div><h3 id="pt">Hollow Knight</h3><div class="meta" id="pm">成就 49/63 · 完成度 78%</div><div class="bar"><i id="pb" style="width:78%"></i></div></div><button class="cls" id="pc">✕ 关闭</button></div>
+<div class="grid" id="pg"></div>
+</div>
+</div>
+<script>
+const GAMES=[
+{id:367520,n:'Hollow Knight',m:'49/63 · 完成度 78%'},
+{id:431960,n:'Wallpaper Engine',m:'5/17 · 完成度 29%'},
+{id:1367550,n:'Kingdom Rush Vengeance',m:'46/90 · 完成度 51%'},
+{id:2358720,n:'Black Myth: Wukong',m:'81/81 · 完成度 100%'},
+{id:730,n:'Counter-Strike 2',m:'1/1 · 完成度 100%'}];
+const ACH=[
+{t:'击败格鲁兹之母',d:'在遗弃十字路击败格鲁兹之母。',on:1,dt:'2024-06-01',ic:'🦋'},
+{t:'击败假骑士',d:'在遗弃十字路击败假骑士。',on:1,dt:'2024-06-02',ic:'🗡️'},
+{t:'击败灵魂大师',d:'在灵魂圣殿击败灵魂大师。',on:1,dt:'2024-06-10',ic:'💀'},
+{t:'击败守望者骑士',d:'在守望者尖塔击败守望者骑士。',on:1,dt:'2024-07-14',ic:'🛡️'},
+{t:'击败收藏家',d:'在皇家水道击败收藏家。',on:1,dt:'2024-07-21',ic:'🎁'},
+{t:'击败乌姆',d:'在教师档案馆击败乌姆。',on:1,dt:'2024-08-03',ic:'🌊'},
+{t:'击败梦魇之王格林',d:'击败梦魇之王格林。',on:1,dt:'2024-09-12',ic:'🔥'},
+{t:'击败空洞骑士',d:'击败空洞骑士，完成故事。',on:1,dt:'2024-10-05',ic:'🕳️'},
+{t:'钢铁之魂模式通关',d:'在钢铁之魂模式下通关。',on:0,ic:'⚙️'},
+{t:'完成 112% 完成度',d:'达成 112% 游戏完成度。',on:0,ic:'🏆'},
+{t:'击败全部 Boss',d:'击败游戏中的全部 Boss。',on:0,ic:'👹'},
+{t:'收集全部护符',d:'收集全部 40 枚护符。',on:0,ic:'🧿'}];
+const row=document.getElementById('row');
+GAMES.forEach((g,i)=>{
+const c=document.createElement('div');
+c.className='card'+(i===0?' on':'');
+c.innerHTML='<div class="cover"><span class="halo"></span><img src="https://cdn.akamai.steamstatic.com/steam/apps/'+g.id+'/library_600x900.jpg" alt=""><span class="badge">Steam</span></div><div class="name">'+g.n+'</div>';
+c.onclick=()=>{document.querySelectorAll('.card').forEach(x=>x.classList.remove('on'));c.classList.add('on');open(g);};
+row.appendChild(c);
+});
+const grid=document.getElementById('pg'),panel=document.getElementById('panel'),pt=document.getElementById('pt'),pm=document.getElementById('pm'),pb=document.getElementById('pb');
+function render(){grid.innerHTML='';ACH.forEach(a=>{const el=document.createElement('div');el.className='ach'+(a.on?'':' lock');el.innerHTML='<div class="ic '+(a.on?'on':'')+'">'+a.ic+'</div><div><h4>'+a.t+'</h4><p>'+a.d+'</p>'+(a.on&&a.dt?'<div class="dt">✓ '+a.dt+' 解锁</div>':'')+'</div>';grid.appendChild(el);});}
+render();
+function open(g){pt.textContent=g.n;pm.textContent='成就 '+g.m;const pct=parseInt((g.m.split('·')[1]||'0').replace(/[^0-9]/g,''))||0;pb.style.width=pct+'%';panel.classList.add('on');panel.scrollIntoView({behavior:'smooth',block:'start'});}
+document.getElementById('pc').onclick=()=>panel.classList.remove('on');
+</script>
+</body></html>

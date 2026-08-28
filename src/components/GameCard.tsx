@@ -5,9 +5,10 @@ import { getGameCapsuleFallbacks } from '../utils/steam';
 
 interface GameCardProps {
   game: UnifiedGame;
+  onSelect?: (game: UnifiedGame) => void;
 }
 
-export default function GameCard({ game }: GameCardProps) {
+export default function GameCard({ game, onSelect }: GameCardProps) {
   const [imageError, setImageError] = useState(false);
   const [imageSrc, setImageSrc] = useState(game.image);
   const [fallbackIndex, setFallbackIndex] = useState(0);
@@ -43,7 +44,13 @@ export default function GameCard({ game }: GameCardProps) {
   };
 
   return (
-    <div className="relative group w-full" onClick={handleTap}>
+    <div
+      className="relative group w-full cursor-pointer"
+      onClick={() => {
+        handleTap();
+        onSelect?.(game);
+      }}
+    >
       {/* Glow: colored halo that fades in on hover, like the Steam library */}
       <div
         className="absolute -inset-4 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"

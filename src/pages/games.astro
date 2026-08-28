@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import GameCarousel from '../components/GameCarousel';
+import SteamLibrary from '../components/SteamLibrary';
 import { getAllGames } from '../utils/unified-games';
 
 // Fetch all games and stats from all platforms in a single call
@@ -66,11 +67,7 @@ const nintendoGames = allGames.filter(g => g.platform === 'nintendo');
                 </div>
               </div>
               <div class="flex-1 min-w-0">
-                <GameCarousel
-                  client:load
-                  games={steamGames}
-                  title="Recent Games"
-                />
+                <SteamLibrary client:load games={steamGames} />
               </div>
             </div>
           </div>
