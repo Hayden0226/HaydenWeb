@@ -21,6 +21,11 @@ export default function GameCard({ game }: GameCardProps) {
   };
 
   const platformColor = getPlatformColor(game.platform);
+  const platformGlow: Record<string, string> = {
+    steam: '#66c0f4',
+    psn: '#4a9eff',
+    nintendo: '#ff5252',
+  }[game.platform] || 'var(--accent)';
 
   const handleImageError = () => {
     // If Steam game, try fallback URLs
@@ -38,13 +43,22 @@ export default function GameCard({ game }: GameCardProps) {
 
   return (
     <div className="relative group w-full" onClick={handleTap}>
+      {/* Glow: colored halo that fades in on hover, like the Steam library */}
+      <div
+        className="absolute -inset-3 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse at 50% 100%, ${platformGlow}59, transparent 65%)`,
+          filter: 'blur(18px)',
+        }}
+      />
+
       <div className="relative w-full aspect-[2/3] rounded-lg overflow-hidden shadow-md border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         {/* Game Image */}
         {!imageError ? (
           <img
             src={imageSrc}
             alt={game.name}
-            className="w-full h-full object-contain transition-opacity duration-200"
+            className="w-full h-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.07] group-hover:-translate-y-2"
             onError={handleImageError}
           />
         ) : (
