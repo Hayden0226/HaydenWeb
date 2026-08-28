@@ -38,14 +38,13 @@ export default function GameCard({ game }: GameCardProps) {
 
   return (
     <div className="relative group w-full" onClick={handleTap}>
-      <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden shadow-md border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+      <div className="relative w-full aspect-[2/3] rounded-lg overflow-hidden shadow-md border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         {/* Game Image */}
         {!imageError ? (
           <img
             src={imageSrc}
             alt={game.name}
             className="w-full h-full object-contain transition-opacity duration-200"
-            style={{ backgroundColor: 'var(--bg-card)' }}
             onError={handleImageError}
           />
         ) : (
