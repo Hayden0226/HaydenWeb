@@ -2,9 +2,9 @@ import { useState } from 'react';
 import type { UnifiedGame } from '../utils/unified-games';
 import type { SteamAchievement, SteamGlobalAchievement } from '../utils/steam';
 
-// The achievement panel uses the same near-black as the nav "Games" link,
-// with white text for contrast.
-const PANEL_BG = 'var(--text-primary)';
+// The achievement panel uses a translucent near-black so the page shows
+// through, with white text for contrast. Cards share the Games accent glow.
+const PANEL_BG = 'rgba(28,25,23,0.86)';
 const PANEL_BORDER = 'rgba(255,255,255,0.14)';
 const CARD_BG = 'rgba(255,255,255,0.08)';
 const TRACK_BG = 'rgba(255,255,255,0.14)';
@@ -96,39 +96,50 @@ export default function AchievementPanel({ game, achievements, global, loading, 
             return (
               <div
                 key={a.apiname}
-                className="flex gap-3 p-3 rounded-lg"
-                style={{ backgroundColor: CARD_BG, opacity: a.achieved ? 1 : 0.6 }}
+                className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(12,74,110,0.5)]"
               >
-                {secret ? (
-                  <div
-                    className="w-10 h-10 rounded flex-shrink-0 grid place-items-center text-lg font-bold"
-                    style={{ backgroundColor: TRACK_BG, color: TEXT_SECONDARY }}
-                  >
-                    ?
-                  </div>
-                ) : a.icon ? (
-                  <img
-                    src={a.achieved ? a.icon : (a.iconGray || a.icon)}
-                    alt=""
-                    className="w-10 h-10 rounded flex-shrink-0 object-contain"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded flex-shrink-0" style={{ backgroundColor: TRACK_BG }} />
-                )}
-                <div className="min-w-0">
-                  <div className="font-semibold text-sm" style={{ color: a.achieved ? TEXT_PRIMARY : TEXT_SECONDARY }}>
-                    {secret ? '？？？' : a.title}
-                  </div>
+                <div
+                  className="absolute -inset-3 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(ellipse at 50% 50%, var(--accent), transparent 78%)',
+                    filter: 'blur(16px)',
+                  }}
+                />
+                <div
+                  className="relative flex gap-3 p-3 rounded-lg"
+                  style={{ backgroundColor: CARD_BG, opacity: a.achieved ? 1 : 0.6 }}
+                >
                   {secret ? (
-                    <div className="text-xs mt-0.5" style={{ color: TEXT_SECONDARY }}>隐藏成就，解锁后才会显示详情。</div>
-                  ) : a.description && (
-                    <div className="text-xs mt-0.5 line-clamp-2" style={{ color: TEXT_SECONDARY }}>{a.description}</div>
-                  )}
-                  {a.achieved && a.unlockTime && (
-                    <div className="text-xs mt-1" style={{ color: PROGRESS_FILL }}>
-                      ✓ {new Date(a.unlockTime * 1000).toLocaleDateString('zh-CN')}
+                    <div
+                      className="w-10 h-10 rounded flex-shrink-0 grid place-items-center text-lg font-bold"
+                      style={{ backgroundColor: TRACK_BG, color: TEXT_SECONDARY }}
+                    >
+                      ?
                     </div>
+                  ) : a.icon ? (
+                    <img
+                      src={a.achieved ? a.icon : (a.iconGray || a.icon)}
+                      alt=""
+                      className="w-10 h-10 rounded flex-shrink-0 object-contain"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded flex-shrink-0" style={{ backgroundColor: TRACK_BG }} />
                   )}
+                  <div className="min-w-0">
+                    <div className="font-semibold text-sm" style={{ color: a.achieved ? TEXT_PRIMARY : TEXT_SECONDARY }}>
+                      {secret ? '？？？' : a.title}
+                    </div>
+                    {secret ? (
+                      <div className="text-xs mt-0.5" style={{ color: TEXT_SECONDARY }}>隐藏成就，解锁后才会显示详情。</div>
+                    ) : a.description && (
+                      <div className="text-xs mt-0.5 line-clamp-2" style={{ color: TEXT_SECONDARY }}>{a.description}</div>
+                    )}
+                    {a.achieved && a.unlockTime && (
+                      <div className="text-xs mt-1" style={{ color: PROGRESS_FILL }}>
+                        ✓ {new Date(a.unlockTime * 1000).toLocaleDateString('zh-CN')}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -143,39 +154,50 @@ export default function AchievementPanel({ game, achievements, global, loading, 
             return (
               <div
                 key={a.apiname}
-                className="flex gap-3 p-3 rounded-lg"
-                style={{ backgroundColor: CARD_BG }}
+                className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(12,74,110,0.5)]"
               >
-                {secret ? (
-                  <div
-                    className="w-10 h-10 rounded flex-shrink-0 grid place-items-center text-lg font-bold"
-                    style={{ backgroundColor: TRACK_BG, color: TEXT_SECONDARY }}
-                  >
-                    ?
-                  </div>
-                ) : a.icon ? (
-                  <img
-                    src={a.achieved ? a.icon : (a.iconGray || a.icon)}
-                    alt=""
-                    className="w-10 h-10 rounded flex-shrink-0 object-contain"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded flex-shrink-0" style={{ backgroundColor: TRACK_BG }} />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="font-semibold text-sm" style={{ color: TEXT_PRIMARY }}>
-                      {secret ? '？？？' : a.title}
-                    </div>
-                    <div className="text-xs flex-shrink-0" style={{ color: TEXT_SECONDARY }}>
-                      {percent.toFixed(1)}%
-                    </div>
-                  </div>
-                  <div className="h-1.5 rounded-full overflow-hidden mt-1.5" style={{ backgroundColor: TRACK_BG }}>
+                <div
+                  className="absolute -inset-3 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(ellipse at 50% 50%, var(--accent), transparent 78%)',
+                    filter: 'blur(16px)',
+                  }}
+                />
+                <div
+                  className="relative flex gap-3 p-3 rounded-lg"
+                  style={{ backgroundColor: CARD_BG }}
+                >
+                  {secret ? (
                     <div
-                      className="h-full transition-all"
-                      style={{ backgroundColor: PROGRESS_FILL, width: `${Math.min(percent, 100)}%` }}
+                      className="w-10 h-10 rounded flex-shrink-0 grid place-items-center text-lg font-bold"
+                      style={{ backgroundColor: TRACK_BG, color: TEXT_SECONDARY }}
+                    >
+                      ?
+                    </div>
+                  ) : a.icon ? (
+                    <img
+                      src={a.achieved ? a.icon : (a.iconGray || a.icon)}
+                      alt=""
+                      className="w-10 h-10 rounded flex-shrink-0 object-contain"
                     />
+                  ) : (
+                    <div className="w-10 h-10 rounded flex-shrink-0" style={{ backgroundColor: TRACK_BG }} />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="font-semibold text-sm" style={{ color: TEXT_PRIMARY }}>
+                        {secret ? '？？？' : a.title}
+                      </div>
+                      <div className="text-xs flex-shrink-0" style={{ color: TEXT_SECONDARY }}>
+                        {percent.toFixed(1)}%
+                      </div>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden mt-1.5" style={{ backgroundColor: TRACK_BG }}>
+                      <div
+                        className="h-full transition-all"
+                        style={{ backgroundColor: PROGRESS_FILL, width: `${Math.min(percent, 100)}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
