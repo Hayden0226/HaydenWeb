@@ -1,4 +1,4 @@
-import { useState, useRef, type ReactNode } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 
 interface BaseCarouselProps {
   itemCount: number;
@@ -33,6 +33,21 @@ export default function BaseCarousel({
       setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
     }
   };
+
+  // Turn the mouse wheel into horizontal scrolling while hovering the carousel.
+  // Registered as a non-passive native listener so preventDefault() actually
+  // stops the page from scrolling vertically.
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const onWheel = (event: WheelEvent) => {
+      if (event.deltaY === 0) return;
+      event.preventDefault();
+      container.scrollBy({ left: event.deltaY, behavior: 'auto' });
+    };
+    container.addEventListener('wheel', onWheel, { passive: false });
+    return () => container.removeEventListener('wheel', onWheel);
+  }, []);
 
   if (itemCount === 0) return null;
 
