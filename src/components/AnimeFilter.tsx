@@ -7,7 +7,7 @@ interface AnimeData {
   englishTitle?: string;
   imageUrl: string;
   score?: number;
-  status: AnimeStatus;
+  status?: AnimeStatus;
   episodes?: number;
   episodesWatched?: number;
   type?: string;
@@ -23,6 +23,7 @@ interface Anime {
 
 interface AnimeFilterProps {
   anime: Anime[];
+  defaultStatus?: string;
 }
 
 const config: MediaFilterGridConfig<Anime> = {
@@ -115,8 +116,14 @@ const config: MediaFilterGridConfig<Anime> = {
   itemNounPlural: 'anime',
 };
 
-function AnimeFilterInner({ anime }: AnimeFilterProps) {
-  return <MediaFilterGrid items={anime} config={config} />;
+function AnimeFilterInner({ anime, defaultStatus = 'completed' }: AnimeFilterProps) {
+  const resolvedConfig: MediaFilterGridConfig<Anime> = {
+    ...config,
+    filters: config.filters.map((filter) =>
+      filter.id === 'status' ? { ...filter, defaultValue: defaultStatus } : filter
+    ),
+  };
+  return <MediaFilterGrid items={anime} config={resolvedConfig} />;
 }
 
 export default function AnimeFilter(props: AnimeFilterProps) {

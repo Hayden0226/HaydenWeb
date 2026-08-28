@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import AnimeFilter from '../components/AnimeFilter';
+import AnimeTabs from '../components/AnimeTabs';
 import StatGrid from '../components/StatGrid.astro';
 import { getAnimeData } from '../utils/anilist';
 
@@ -9,9 +9,30 @@ const animeData = await getAnimeData();
 
 // Use AniList data if available
 let anime = [];
+let favourites = [];
 if (animeData && animeData.anime.length > 0) {
   // Map AniList entries to the format expected by the UI
   anime = animeData.anime
+    .map(a => ({
+      data: {
+        title: a.title,
+        englishTitle: a.englishTitle,
+        imageUrl: a.imageUrl,
+        score: a.score,
+        status: a.status,
+        episodes: a.episodes,
+        episodesWatched: a.episodesWatched,
+        type: a.type,
+        year: a.year,
+        startDate: a.startDate,
+        endDate: a.endDate,
+        entryUrl: a.entryUrl,
+      }
+    }));
+}
+if (animeData && animeData.favourites.length > 0) {
+  // Map AniList favourites to the same format
+  favourites = animeData.favourites
     .map(a => ({
       data: {
         title: a.title,
@@ -35,6 +56,7 @@ const watchingCount = anime.filter(a => a.data.status === 'watching').length;
 const completedCount = anime.filter(a => a.data.status === 'completed').length;
 const scoredCount = anime.filter(a => a.data.score && a.data.score > 0).length;
 const top10Count = anime.filter(a => a.data.score === 10).length;
+const hasAny = anime.length > 0 || favourites.length > 0;
 ---
 
 <BaseLayout
@@ -48,18 +70,9 @@ const top10Count = anime.filter(a => a.data.score === 10).length;
       </h1>
     </div>
 
-    {anime.length > 0 && (
+    {hasAny && (
       <section class="mb-20">
-        <div class="flex items-center justify-between mb-8">
-          <h2 class="text-3xl font-bold" style="color: var(--text-primary);">
-            My Anime List
-          </h2>
-          <span class="text-sm" style="color: var(--text-secondary);">
-            {anime.length} {anime.length === 1 ? 'anime' : 'anime'}
-          </span>
-        </div>
-
-        <AnimeFilter client:load anime={anime} />
+        <AnimeTabs client:load overview={anime} favourites={favourites} />
 
         <StatGrid title="Viewing Stats" stats={[
           { value: completedCount, label: 'Completed' },
@@ -70,7 +83,7 @@ const top10Count = anime.filter(a => a.data.score === 10).length;
       </section>
     )}
 
-    {anime.length === 0 && (
+    {!hasAny && (
       <div class="text-center py-12">
         <p class="text-lg" style="color: var(--text-secondary);">
           {animeData

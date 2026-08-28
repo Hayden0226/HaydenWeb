@@ -28,6 +28,7 @@ export interface AnimeEntry {
 
 export interface AnimeData {
   anime: AnimeEntry[];
+  favourites: AnimeEntry[];
   timestamp: number;
 }
 
@@ -47,6 +48,40 @@ query ($userName: String) {
         score
         progress
         media {
+          id
+          title {
+            romaji
+            english
+          }
+          format
+          episodes
+          seasonYear
+          coverImage {
+            extraLarge
+            large
+          }
+          startDate {
+            year
+            month
+            day
+          }
+          endDate {
+            year
+            month
+            day
+          }
+        }
+      }
+    }
+  }
+}`;
+
+const FAVOURITES_QUERY = `
+query ($userName: String) {
+  User(name: $userName) {
+    favourites {
+      anime {
+        nodes {
           id
           title {
             romaji
@@ -176,11 +211,66 @@ async function fetchAnimeList(): Promise<AnimeEntry[]> {
 }
 
 /**
+ * Fetch the anime the user has marked as favourites on AniList.
+ * Enriches each entry with list info (score / status) when it is also on the
+ * user's anime list.
+ */
+async function fetchFavourites(listById: Map<number, AnimeEntry>): Promise<AnimeEntry[]> {
+  const response = await fetchWithRetry(
+    ANILIST_API,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        query: FAVOURITES_QUERY,
+        variables: { userName: ANILIST_USERNAME },
+      }),
+    },
+    { maxRetries: 2, initialDelayMs: 1000 }
+  );
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  const json = await response.json();
+  if (json.errors && json.errors.length > 0) {
+    throw new Error(`AniList: ${json.errors[0].message}`);
+  }
+
+  const nodes = json.data?.User?.favourites?.anime?.nodes ?? [];
+  const favourites: AnimeEntry[] = [];
+
+  for (const media of nodes) {
+    const inList = media.id ? listById.get(media.id) : undefined;
+    favourites.push({
+      title: media.title?.romaji || media.title?.english || 'Untitled',
+      englishTitle: media.title?.english || undefined,
+      imageUrl: media.coverImage?.extraLarge || media.coverImage?.large || '',
+      score: inList?.score,
+      status: inList?.status,
+      episodes: media.episodes || inList?.episodes,
+      episodesWatched: inList?.episodesWatched,
+      type: media.format || undefined,
+      year: media.seasonYear || undefined,
+      startDate: toDate(media.startDate?.year, media.startDate?.month, media.startDate?.day) || inList?.startDate,
+      endDate: toDate(media.endDate?.year, media.endDate?.month, media.endDate?.day) || inList?.endDate,
+      entryUrl: `https://anilist.co/anime/${media.id}`,
+    });
+  }
+
+  return favourites;
+}
+
+/**
  * Get all anime from the user's AniList account.
  */
 export async function getAnimeData(): Promise<AnimeData | null> {
   const cached = await cache.get();
-  if (cached) return cached;
+  if (cached && Array.isArray(cached.anime) && Array.isArray(cached.favourites)) return cached;
 
   if (!ANILIST_USERNAME) {
     log.info('AniList username not configured, skipping...');
@@ -189,9 +279,15 @@ export async function getAnimeData(): Promise<AnimeData | null> {
 
   try {
     const anime = await fetchAnimeList();
-    const data: AnimeData = { anime, timestamp: Date.now() };
+    const listById = new Map<number, AnimeEntry>();
+    for (const entry of anime) {
+      const idMatch = /\/anime\/(\d+)$/.exec(entry.entryUrl);
+      if (idMatch) listById.set(Number(idMatch[1]), entry);
+    }
+    const favourites = await fetchFavourites(listById);
+    const data: AnimeData = { anime, favourites, timestamp: Date.now() };
     await cache.set(data);
-    log.info(`Fetched ${anime.length} anime from AniList`);
+    log.info(`Fetched ${anime.length} anime and ${favourites.length} favourites from AniList`);
     return data;
   } catch (error) {
     log.error('Error fetching AniList data:', error);
