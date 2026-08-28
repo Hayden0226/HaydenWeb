@@ -44,12 +44,12 @@ export default function GameCard({ game }: GameCardProps) {
 
   return (
     <div className="relative group w-full" onClick={handleTap}>
-      {/* Glow: colored halo that fades in on hover, like the Steam library */}
+      {/* Glow: soft colored halo that fades in on hover, like the Steam library.
+          box-shadow diffuses naturally with no hard cutoff at the element edge. */}
       <div
-        className="absolute -inset-3 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        className="absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse at 50% 100%, ${glowColor}59, transparent 65%)`,
-          filter: 'blur(18px)',
+          boxShadow: `0 0 18px 2px ${glowColor}55, 0 0 36px 6px ${glowColor}22`,
         }}
       />
 
