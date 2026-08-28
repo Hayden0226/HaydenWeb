@@ -10,7 +10,7 @@ const CARD_BG = 'rgba(255,255,255,0.08)';
 const TRACK_BG = 'rgba(255,255,255,0.14)';
 const TEXT_PRIMARY = '#ffffff';
 const TEXT_SECONDARY = 'rgba(255,255,255,0.75)';
-const ACCENT_LIGHT = '#a8d8f2';
+const PROGRESS_FILL = '#ffffff';
 
 interface AchievementPanelProps {
   game: UnifiedGame;
@@ -49,7 +49,7 @@ export default function AchievementPanel({ game, achievements, global, loading, 
           <div className="h-2 w-64 max-w-full rounded-full overflow-hidden mt-2" style={{ backgroundColor: TRACK_BG }}>
             <div
               className="h-full transition-all"
-              style={{ backgroundColor: ACCENT_LIGHT, width: `${tab === 'mine' ? pct : globalAvg}%` }}
+              style={{ backgroundColor: PROGRESS_FILL, width: `${tab === 'mine' ? pct : globalAvg}%` }}
             />
           </div>
         </div>
@@ -125,7 +125,7 @@ export default function AchievementPanel({ game, achievements, global, loading, 
                     <div className="text-xs mt-0.5 line-clamp-2" style={{ color: TEXT_SECONDARY }}>{a.description}</div>
                   )}
                   {a.achieved && a.unlockTime && (
-                    <div className="text-xs mt-1" style={{ color: ACCENT_LIGHT }}>
+                    <div className="text-xs mt-1" style={{ color: PROGRESS_FILL }}>
                       ✓ {new Date(a.unlockTime * 1000).toLocaleDateString('zh-CN')}
                     </div>
                   )}
@@ -174,7 +174,7 @@ export default function AchievementPanel({ game, achievements, global, loading, 
                   <div className="h-1.5 rounded-full overflow-hidden mt-1.5" style={{ backgroundColor: TRACK_BG }}>
                     <div
                       className="h-full transition-all"
-                      style={{ backgroundColor: ACCENT_LIGHT, width: `${Math.min(percent, 100)}%` }}
+                      style={{ backgroundColor: PROGRESS_FILL, width: `${Math.min(percent, 100)}%` }}
                     />
                   </div>
                 </div>
