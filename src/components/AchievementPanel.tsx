@@ -2,15 +2,15 @@ import { useState } from 'react';
 import type { UnifiedGame } from '../utils/unified-games';
 import type { SteamAchievement, SteamGlobalAchievement } from '../utils/steam';
 
-// The achievement panel is intentionally dark regardless of the page theme,
-// mirroring Steam's library achievements view.
-const PANEL_BG = '#1b1f24';
-const PANEL_BORDER = '#2a3038';
-const CARD_BG = '#242a32';
-const TRACK_BG = '#12161a';
-const TEXT_PRIMARY = '#e6e8eb';
-const TEXT_SECONDARY = '#9aa3ad';
-const ACCENT_LIGHT = '#6fb6dc';
+// The achievement panel mirrors the accent color of the site brand (Hayden),
+// with white-on-accent text like Steam's dark achievement views.
+const PANEL_BG = 'var(--accent)';
+const PANEL_BORDER = 'rgba(255,255,255,0.18)';
+const CARD_BG = 'rgba(255,255,255,0.10)';
+const TRACK_BG = 'rgba(255,255,255,0.16)';
+const TEXT_PRIMARY = '#ffffff';
+const TEXT_SECONDARY = 'rgba(255,255,255,0.78)';
+const ACCENT_LIGHT = '#a8d8f2';
 
 interface AchievementPanelProps {
   game: UnifiedGame;
@@ -69,7 +69,7 @@ export default function AchievementPanel({ game, achievements, global, loading, 
                 className="px-4 py-1.5 rounded-lg text-sm cursor-pointer hover:opacity-80"
                 style={
                   tab === value
-                    ? { backgroundColor: ACCENT_LIGHT, color: '#101418', fontWeight: 600 }
+                    ? { backgroundColor: '#ffffff', color: 'var(--accent)', fontWeight: 600 }
                     : { backgroundColor: CARD_BG, color: TEXT_SECONDARY }
                 }
               >
