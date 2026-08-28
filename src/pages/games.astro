@@ -42,34 +42,7 @@ const nintendoGames = allGames.filter(g => g.platform === 'nintendo');
         {/* Steam Games */}
         {steamStats && steamGames.length > 0 && (
           <div class="mb-12 p-6 rounded-lg" style="background-color: var(--bg-secondary);">
-            <div class="flex flex-col lg:flex-row gap-8">
-              <div class="lg:w-64 flex-shrink-0">
-                <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">Steam</h3>
-                <div class="space-y-4">
-                  <div>
-                    <div class="text-3xl font-bold" style="color: var(--accent);">
-                      {steamStats.totalGames}
-                    </div>
-                    <div class="text-sm" style="color: var(--text-secondary);">Total Games</div>
-                  </div>
-                  <div>
-                    <div class="text-3xl font-bold" style="color: var(--accent);">
-                      {steamStats.totalHoursPlayed.toLocaleString()}h
-                    </div>
-                    <div class="text-sm" style="color: var(--text-secondary);">Hours Played</div>
-                  </div>
-                  <div>
-                    <div class="text-3xl font-bold" style="color: var(--accent);">
-                      {steamStats.gamesPlayedCount}
-                    </div>
-                    <div class="text-sm" style="color: var(--text-secondary);">Games Played</div>
-                  </div>
-                </div>
-              </div>
-              <div class="flex-1 min-w-0">
-                <SteamLibrary client:load games={steamGames} />
-              </div>
-            </div>
+            <SteamLibrary client:load games={steamGames} stats={steamStats} />
           </div>
         )}
 

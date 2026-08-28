@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import type { UnifiedGame } from '../utils/unified-games';
-import type { SteamAchievementDetails } from '../utils/steam';
+import type { SteamAchievementDetails, SteamStats } from '../utils/steam';
 import GameCarousel from './GameCarousel';
 import AchievementPanel from './AchievementPanel';
 
 interface SteamLibraryProps {
   games: UnifiedGame[];
+  stats?: SteamStats | null;
 }
 
-export default function SteamLibrary({ games }: SteamLibraryProps) {
+export default function SteamLibrary({ games, stats }: SteamLibraryProps) {
   const [selected, setSelected] = useState<UnifiedGame | null>(null);
   const [details, setDetails] = useState<SteamAchievementDetails | null>(null);
   const [loading, setLoading] = useState(false);
@@ -54,7 +55,30 @@ export default function SteamLibrary({ games }: SteamLibraryProps) {
 
   return (
     <div className="relative">
-      <GameCarousel games={games} title="Recent Games" onSelect={handleSelect} />
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="lg:w-64 flex-shrink-0">
+          <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Steam</h3>
+          {stats && (
+            <div className="space-y-4">
+              <div>
+                <div className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{stats.totalGames}</div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Total Games</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{stats.totalHoursPlayed.toLocaleString()}h</div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Hours Played</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{stats.gamesPlayedCount}</div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Games Played</div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <GameCarousel games={games} title="Recent Games" onSelect={handleSelect} />
+        </div>
+      </div>
       <div ref={panelRef}>
         {selected && (
           <AchievementPanel
