@@ -44,7 +44,8 @@ export default function GameCard({ game }: GameCardProps) {
           <img
             src={imageSrc}
             alt={game.name}
-            className="w-full h-full object-cover transition-opacity duration-200"
+            className="w-full h-full object-contain transition-opacity duration-200"
+            style={{ backgroundColor: 'var(--bg-card)' }}
             onError={handleImageError}
           />
         ) : (

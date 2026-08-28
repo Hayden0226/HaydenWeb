@@ -1,5 +1,5 @@
 // Unified game data structure combining Steam, PSN, and Nintendo
-import { getSteamStats, getSteamAchievements, getSteamHeaderUrl, type SteamGame, type SteamStats, type SteamAchievementInfo } from './steam';
+import { getSteamStats, getSteamAchievements, getSteamLibraryUrl, type SteamGame, type SteamStats, type SteamAchievementInfo } from './steam';
 import { getPSNData, type PSNGame, type PSNStats } from './psn';
 import { getNintendoStats, type NintendoGame, type NintendoStats } from './nintendo';
 import { getIGDBCoverUrl, isExcludedGame, flushIGDBCache } from './igdb';
@@ -77,13 +77,13 @@ export async function getAllGames(): Promise<AllGamesResult> {
           getIGDBCoverUrl(game.name, 'steam'),
           getSteamAchievements(game.appid),
         ]);
-        const steamHeader = getSteamHeaderUrl(game.appid);
+        const steamCover = getSteamLibraryUrl(game.appid);
         return {
           id: `steam-${game.appid}`,
           name: game.name,
           platform: 'steam',
-          image: igdbCover || steamHeader,
-          headerImage: igdbCover || steamHeader,
+          image: igdbCover || steamCover,
+          headerImage: igdbCover || steamCover,
           steamData: {
             appid: game.appid,
             playtimeMinutes: game.playtime_forever,

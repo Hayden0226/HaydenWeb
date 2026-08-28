@@ -249,9 +249,9 @@ export function getGameCapsuleFallbacks(appid: number): string[] {
 }
 
 /**
- * Primary Steam store capsule image URL, used as the initial cover so Steam
- * games always have art even when IGDB isn't configured.
+ * Steam vertical library artwork (600x900), used as the initial cover so Steam
+ * games always have art that fits the 3:4 card without cropping.
  */
-export function getSteamHeaderUrl(appid: number): string {
-  return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
+export function getSteamLibraryUrl(appid: number): string {
+  return `https://cdn.akamai.steamstatic.com/steam/apps/${appid}/library_600x900.jpg`;
 }
