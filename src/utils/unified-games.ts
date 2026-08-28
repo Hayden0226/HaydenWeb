@@ -1,5 +1,5 @@
 // Unified game data structure combining Steam, PSN, and Nintendo
-import { getSteamStats, type SteamGame, type SteamStats } from './steam';
+import { getSteamStats, getSteamAchievements, getSteamHeaderUrl, type SteamGame, type SteamStats, type SteamAchievementInfo } from './steam';
 import { getPSNData, type PSNGame, type PSNStats } from './psn';
 import { getNintendoStats, type NintendoGame, type NintendoStats } from './nintendo';
 import { getIGDBCoverUrl, isExcludedGame, flushIGDBCache } from './igdb';
@@ -21,6 +21,7 @@ export interface UnifiedGame {
     appid: number;
     playtimeMinutes: number;
     lastPlayed?: number;
+    achievements?: SteamAchievementInfo;
   };
 
   psnData?: {
@@ -72,17 +73,22 @@ export async function getAllGames(): Promise<AllGamesResult> {
     );
     const steamGames = await Promise.all(
       filteredSteamGames.map(async (game: SteamGame): Promise<UnifiedGame> => {
-        const igdbCover = await getIGDBCoverUrl(game.name, 'steam');
+        const [igdbCover, achievements] = await Promise.all([
+          getIGDBCoverUrl(game.name, 'steam'),
+          getSteamAchievements(game.appid),
+        ]);
+        const steamHeader = getSteamHeaderUrl(game.appid);
         return {
           id: `steam-${game.appid}`,
           name: game.name,
           platform: 'steam',
-          image: igdbCover || '',
-          headerImage: igdbCover || '',
+          image: igdbCover || steamHeader,
+          headerImage: igdbCover || steamHeader,
           steamData: {
             appid: game.appid,
             playtimeMinutes: game.playtime_forever,
             lastPlayed: game.rtime_last_played,
+            achievements: achievements ?? undefined,
           },
         };
       })

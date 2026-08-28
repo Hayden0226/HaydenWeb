@@ -44,6 +44,8 @@ jobs:
           echo "ANILIST_USERNAME=${{ secrets.ANILIST_USERNAME || 'Hayden0325' }}" >> .env
           echo "STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}" >> .env
           echo "STEAM_ID=${{ secrets.STEAM_ID }}" >> .env
+          echo "IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}" >> .env
+          echo "IGDB_ACCESS_TOKEN=${{ secrets.IGDB_ACCESS_TOKEN }}" >> .env
 
       - name: Install Puppeteer Chrome
         run: npx puppeteer browsers install chrome

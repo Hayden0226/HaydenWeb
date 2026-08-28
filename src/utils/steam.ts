@@ -4,6 +4,7 @@
 import { fetchWithRetry } from './retry';
 import { FileCache } from './cache';
 import { createLogger } from './logger';
+import { pLimit } from './concurrency';
 
 const log = createLogger('Steam');
 
@@ -39,6 +40,79 @@ interface SteamData {
 const cache = new FileCache<SteamData>('steam-data', {
   ttl: 24 * 60 * 60 * 1000,
 });
+
+export interface SteamAchievementInfo {
+  unlocked: number;
+  total: number;
+}
+
+interface SteamAchievementsData {
+  games: Record<string, SteamAchievementInfo>;
+  timestamp: number;
+}
+
+const achievementsCache = new FileCache<SteamAchievementsData>('steam-achievements', {
+  ttl: 7 * 24 * 60 * 60 * 1000,
+});
+
+// Steam is rate-limited on free API keys; serialize achievement requests so a
+// large library can't trip 429s mid-build.
+const achievementsLimit = pLimit(1);
+
+/**
+ * Fetch achievement progress for a single game (unlocked / total).
+ * Returns null when the game has no achievements or the profile hides them.
+ */
+export async function getSteamAchievements(appid: number): Promise<SteamAchievementInfo | null> {
+  if (!STEAM_API_KEY || !STEAM_ID) {
+    return null;
+  }
+
+  return achievementsLimit(async () => {
+    const key = String(appid);
+    const cached = await achievementsCache.get();
+    if (cached?.games?.[key]) {
+      return cached.games[key];
+    }
+
+    try {
+      const response = await fetchWithRetry(
+        `${BASE_URL}/ISteamUserStats/GetPlayerAchievements/v0001/?appid=${appid}&key=${STEAM_API_KEY}&steamid=${STEAM_ID}&format=json`,
+        undefined,
+        {
+          maxRetries: 2,
+          initialDelayMs: 1000,
+          onRetry: (error, attempt) => {
+            log.info(`Achievements retry ${attempt} for app ${appid}: ${error.message}`);
+          },
+        }
+      );
+      const data = await response.json();
+      const stats = data.playerstats;
+      // success === false means the game has no achievements or it hasn't been
+      // played enough for the API to expose them.
+      if (!stats || stats.success === false) {
+        return null;
+      }
+      const achievements: { achieved?: boolean }[] = stats.achievements || [];
+      const info: SteamAchievementInfo = {
+        unlocked: achievements.filter((a) => a.achieved).length,
+        total: achievements.length,
+      };
+      const all: SteamAchievementsData = {
+        ...(cached ?? { games: {} }),
+        games: { ...(cached?.games ?? {}), [key]: info },
+        timestamp: Date.now(),
+      };
+      await achievementsCache.set(all);
+      log.info(`Fetched Steam achievements for app ${appid}: ${info.unlocked}/${info.total}`);
+      return info;
+    } catch (error) {
+      log.error(`Error fetching achievements for app ${appid}:`, error);
+      return null;
+    }
+  });
+}
 
 /**
  * Fetch player summary (profile info, online status, currently playing)
@@ -172,4 +246,12 @@ export function getGameCapsuleFallbacks(appid: number): string[] {
     `https://media.steampowered.com/steam/apps/${appid}/header.jpg`,
     `https://cdn.akamai.steamstatic.com/steam/apps/${appid}/header.jpg`,
   ];
+}
+
+/**
+ * Primary Steam store capsule image URL, used as the initial cover so Steam
+ * games always have art even when IGDB isn't configured.
+ */
+export function getSteamHeaderUrl(appid: number): string {
+  return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
 }

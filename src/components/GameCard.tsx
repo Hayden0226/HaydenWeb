@@ -87,6 +87,23 @@ export default function GameCard({ game }: GameCardProps) {
                     <span className="font-semibold">{new Date(game.steamData.lastPlayed * 1000).toLocaleDateString()}</span>
                   </div>
                 )}
+                {game.steamData.achievements && game.steamData.achievements.total > 0 && (
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <span style={{ color: 'var(--text-secondary)' }}>Achievements:</span>
+                      <span className="font-semibold">{game.steamData.achievements.unlocked}/{game.steamData.achievements.total}</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          backgroundColor: 'var(--accent)',
+                          width: `${Math.round((game.steamData.achievements.unlocked / game.steamData.achievements.total) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
