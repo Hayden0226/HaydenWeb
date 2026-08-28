@@ -29,7 +29,7 @@ export interface MediaTool {
   options?: ToolOption[];
   engine: 'ffmpeg' | 'image';
   buildArgs?: (input: string, output: string, opts: Record<string, unknown>) => string[];
-  runImage?: (blob: Blob, opts: Record<string, unknown>) => Promise<{ blob: Blob; outputName: string }>;
+  runImage?: (blob: Blob, opts: Record<string, unknown>) => Promise<{ blob: Blob; outputExt: string }>;
 }
 
 export interface ConvertResult {
@@ -85,6 +85,11 @@ async function reencode(
 function num(value: unknown, fallback: number): number {
   const n = typeof value === 'number' && Number.isFinite(value) ? value : Number(value);
   return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+function baseNameOf(fileName: string): string {
+  const base = fileName.replace(/\.[^.]+$/, '');
+  return base || 'converted';
 }
 
 // ---- Tool definitions --------------------------------------------------------
@@ -331,7 +336,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: 'image/jpeg,image/jpg',
     outputExt: 'png',
     engine: 'image',
-    runImage: (blob) => reencode(blob, 'image/png').then((b) => ({ blob: b, outputName: 'image.png' })),
+    runImage: (blob) => reencode(blob, 'image/png').then((b) => ({ blob: b, outputExt: 'png' })),
   },
   {
     id: 'png-to-jpg',
@@ -342,7 +347,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'jpg',
     engine: 'image',
     options: [JPEG_QUALITY],
-    runImage: (blob, opts) => reencode(blob, 'image/jpeg', num(opts.quality, 0.92)).then((b) => ({ blob: b, outputName: 'image.jpg' })),
+    runImage: (blob, opts) => reencode(blob, 'image/jpeg', num(opts.quality, 0.92)).then((b) => ({ blob: b, outputExt: 'jpg' })),
   },
   {
     id: 'png-to-webp',
@@ -353,7 +358,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'webp',
     engine: 'image',
     options: [{ key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 0.85 }],
-    runImage: (blob, opts) => reencode(blob, 'image/webp', num(opts.quality, 0.85)).then((b) => ({ blob: b, outputName: 'image.webp' })),
+    runImage: (blob, opts) => reencode(blob, 'image/webp', num(opts.quality, 0.85)).then((b) => ({ blob: b, outputExt: 'webp' })),
   },
   {
     id: 'jpg-to-webp',
@@ -364,7 +369,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'webp',
     engine: 'image',
     options: [{ key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 0.85 }],
-    runImage: (blob, opts) => reencode(blob, 'image/webp', num(opts.quality, 0.85)).then((b) => ({ blob: b, outputName: 'image.webp' })),
+    runImage: (blob, opts) => reencode(blob, 'image/webp', num(opts.quality, 0.85)).then((b) => ({ blob: b, outputExt: 'webp' })),
   },
   {
     id: 'webp-to-png',
@@ -374,7 +379,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: 'image/webp',
     outputExt: 'png',
     engine: 'image',
-    runImage: (blob) => reencode(blob, 'image/png').then((b) => ({ blob: b, outputName: 'image.png' })),
+    runImage: (blob) => reencode(blob, 'image/png').then((b) => ({ blob: b, outputExt: 'png' })),
   },
   {
     id: 'gif-to-png',
@@ -384,7 +389,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: '.gif,image/gif',
     outputExt: 'png',
     engine: 'image',
-    runImage: (blob) => reencode(blob, 'image/png').then((b) => ({ blob: b, outputName: 'image.png' })),
+    runImage: (blob) => reencode(blob, 'image/png').then((b) => ({ blob: b, outputExt: 'png' })),
   },
   {
     id: 'image-compressor',
@@ -405,7 +410,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     runImage: (blob, opts) => {
       const fmt = String(opts.format ?? 'webp');
       const mime = fmt === 'jpeg' ? 'image/jpeg' : fmt === 'png' ? 'image/png' : 'image/webp';
-      return reencode(blob, mime, num(opts.quality, 0.75)).then((b) => ({ blob: b, outputName: `image.${fmt === 'jpeg' ? 'jpg' : fmt}` }));
+      return reencode(blob, mime, num(opts.quality, 0.75)).then((b) => ({ blob: b, outputExt: fmt === 'jpeg' ? 'jpg' : fmt }));
     },
   },
   {
@@ -437,7 +442,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
       canvas.height = outHeight;
       canvas.getContext('2d')?.drawImage(img, 0, 0, outWidth, outHeight);
       const outBlob = await canvasToBlob(canvas, mime, num(opts.quality, 0.88));
-      return { blob: outBlob, outputName: `image.${fmt === 'webp' ? 'webp' : 'jpg'}` };
+      return { blob: outBlob, outputExt: fmt === 'webp' ? 'webp' : 'jpg' };
     },
   },
   {
@@ -484,7 +489,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
       canvas.height = outH;
       canvas.getContext('2d')?.drawImage(img, sx, sy, cropW, cropH, 0, 0, outW, outH);
       const outBlob = await canvasToBlob(canvas, mime, fmt === 'png' ? undefined : num(opts.quality, 0.9));
-      return { blob: outBlob, outputName: `cropped.${fmt === 'jpeg' ? 'jpg' : fmt}` };
+      return { blob: outBlob, outputExt: fmt === 'jpeg' ? 'jpg' : fmt };
     },
   },
 ];
@@ -540,7 +545,7 @@ async function convertVideoToImages(
 
   await ffmpeg.deleteFile(inputName).catch(() => undefined);
   const blob = await zip.generateAsync({ type: 'blob' });
-  return { blobs: [blob], outputNames: ['frames.zip'] };
+  return { blobs: [blob], outputNames: [`${baseNameOf(file.name)}-frames.zip`] };
 }
 
 export async function convertWithTool(
@@ -556,10 +561,10 @@ export async function convertWithTool(
 
   if (tool.engine === 'image' && tool.runImage) {
     const result = await tool.runImage(file, opts);
-    return { blobs: [result.blob], outputNames: [result.outputName] };
+    return { blobs: [result.blob], outputNames: [`${baseNameOf(file.name)}.${result.outputExt}`] };
   }
 
-  const outputName = `output.${tool.outputExt}`;
+  const outputName = `${baseNameOf(file.name)}.${tool.outputExt}`;
   const blob = await runFFmpeg({
     file,
     outputName,
