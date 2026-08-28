@@ -14,7 +14,7 @@ interface AnimeData {
   year?: number;
   startDate?: string;
   endDate?: string;
-  malUrl: string;
+  entryUrl: string;
 }
 
 interface Anime {
@@ -105,7 +105,7 @@ const config: MediaFilterGridConfig<Anime> = {
   ],
   defaultSort: 'releaseDate',
   card: {
-    getKey: (a) => `${a.data.title}-${a.data.malUrl}`,
+    getKey: (a) => `${a.data.title}-${a.data.entryUrl}`,
     getTitle: (a) => a.data.title,
     getSubtitle: (a) => a.data.type || '',
     getImage: (a) => a.data.imageUrl,

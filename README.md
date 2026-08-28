@@ -15,7 +15,7 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + Tailwind CSS 构
   - **Music** — Last.fm 最近播放、Top 艺人 / 歌曲 / 专辑 / 流派
   - **Movies** — Letterboxd 观影记录（含评分）
   - **TV** — TMDB 追剧（总览 / 收藏 / 待看）
-  - **Anime** — MyAnimeList 番剧记录（待配置）
+  - **Anime** — AniList 番剧记录（需填用户名）
 - **Games** — Steam / PSN / Nintendo 游戏数据（待配置）
 - **Photography** — 跳转到 [visuals.haydenweb.com](https://visuals.haydenweb.com/)
 - **Toodles** — 实用小工具合集（占位页）
@@ -28,7 +28,7 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + Tailwind CSS 构
 | Music | Last.fm API + iTunes Search 封面 | ✅ 已启用 |
 | Movies | Letterboxd（Puppeteer 爬取） | ✅ 已启用 |
 | TV | TMDB API（总览 / 收藏 / 待看） | ✅ 已启用 |
-| Anime | MyAnimeList API | ⏳ 待配置 |
+| Anime | AniList 公开 API | ✅ 已接入（需填用户名） |
 | Games | Steam / PSN / Nintendo / IGDB | ⏳ 待配置 |
 
 ## 本地开发
@@ -55,7 +55,7 @@ npm run dev
 | `TMDB_ACCESS_TOKEN` | TMDB v4 API Token（TV 页） |
 | `TMDB_ACCOUNT_OBJECT_ID` | TMDB v4 账户 Object ID（可选，默认从 token 自动解码） |
 | `TMDB_TV_LIST_ID` | TMDB 自定义列表 ID（可选，展示没打分的剧） |
-| `MAL_CLIENT_ID` / `MAL_ACCESS_TOKEN` | MyAnimeList API（Anime 页） |
+| `ANILIST_USERNAME` | AniList 用户名（Anime 页） |
 | `STEAM_API_KEY` / `STEAM_ID` | Steam Web API（Games 页） |
 
 ## 部署（GitHub Pages）
