@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { UnifiedGame } from '../utils/unified-games';
-import { getPlatformName, getPlatformColor } from '../utils/unified-games';
+import { getPlatformName, getPlatformColor } from '../utils/platform';
 import { getGameCapsuleFallbacks } from '../utils/steam';
 
 interface GameCardProps {
@@ -26,6 +26,7 @@ export default function GameCard({ game }: GameCardProps) {
     psn: '#4a9eff',
     nintendo: '#ff5252',
   }[game.platform] || 'var(--accent)';
+  const glowColor = game.glowColor || platformGlow;
 
   const handleImageError = () => {
     // If Steam game, try fallback URLs
@@ -47,7 +48,7 @@ export default function GameCard({ game }: GameCardProps) {
       <div
         className="absolute -inset-3 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse at 50% 100%, ${platformGlow}59, transparent 65%)`,
+          background: `radial-gradient(ellipse at 50% 100%, ${glowColor}59, transparent 65%)`,
           filter: 'blur(18px)',
         }}
       />

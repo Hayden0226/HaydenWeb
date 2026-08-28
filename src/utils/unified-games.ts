@@ -3,11 +3,11 @@ import { getSteamStats, getSteamAchievements, getSteamLibraryUrl, type SteamGame
 import { getPSNData, type PSNGame, type PSNStats } from './psn';
 import { getNintendoStats, type NintendoGame, type NintendoStats } from './nintendo';
 import { getIGDBCoverUrl, isExcludedGame, flushIGDBCache } from './igdb';
+import { getCoverGlowColor } from './cover-color';
 import { createLogger } from './logger';
+import type { Platform } from './platform';
 
 const log = createLogger('Games');
-
-export type Platform = 'steam' | 'psn' | 'nintendo';
 
 export interface UnifiedGame {
   id: string; // Unique identifier combining platform + game ID
@@ -15,6 +15,7 @@ export interface UnifiedGame {
   platform: Platform;
   image: string; // Card/thumbnail image
   headerImage?: string; // Larger header image for modal
+  glowColor?: string; // Dominant cover color for the hover halo
 
   // Platform-specific data
   steamData?: {
@@ -78,12 +79,15 @@ export async function getAllGames(): Promise<AllGamesResult> {
           getSteamAchievements(game.appid),
         ]);
         const steamCover = getSteamLibraryUrl(game.appid);
+        const image = igdbCover || steamCover;
+        const glowColor = image ? await getCoverGlowColor(image) : null;
         return {
           id: `steam-${game.appid}`,
           name: game.name,
           platform: 'steam',
-          image: igdbCover || steamCover,
-          headerImage: igdbCover || steamCover,
+          image,
+          headerImage: image,
+          glowColor: glowColor ?? undefined,
           steamData: {
             appid: game.appid,
             playtimeMinutes: game.playtime_forever,
@@ -106,12 +110,14 @@ export async function getAllGames(): Promise<AllGamesResult> {
     const psnUnified = await Promise.all(
       filteredPsnGames.map(async (game: PSNGame): Promise<UnifiedGame> => {
         const igdbCover = await getIGDBCoverUrl(game.name, 'psn');
+        const glowColor = igdbCover ? await getCoverGlowColor(igdbCover) : null;
         return {
           id: `psn-${game.titleId}`,
           name: game.name,
           platform: 'psn',
           image: igdbCover || '',
           headerImage: igdbCover || '',
+          glowColor: glowColor ?? undefined,
           psnData: {
             titleId: game.titleId,
             category: game.category,
@@ -141,12 +147,14 @@ export async function getAllGames(): Promise<AllGamesResult> {
     const nintendoUnified = await Promise.all(
       filteredNintendoGames.map(async (game: NintendoGame): Promise<UnifiedGame> => {
         const igdbCover = await getIGDBCoverUrl(game.name, 'nintendo');
+        const glowColor = igdbCover ? await getCoverGlowColor(igdbCover) : null;
         return {
           id: `nintendo-${game.titleId}`,
           name: game.name,
           platform: 'nintendo',
           image: igdbCover || '',
           headerImage: igdbCover || '',
+          glowColor: glowColor ?? undefined,
           nintendoData: {
             titleId: game.titleId,
             playtimeSeconds: game.totalPlayTime,
@@ -170,30 +178,6 @@ export async function getAllGames(): Promise<AllGamesResult> {
   };
 }
 
-/**
- * Get platform display name
- */
-export function getPlatformName(platform: Platform): string {
-  switch (platform) {
-    case 'steam':
-      return 'Steam';
-    case 'psn':
-      return 'PlayStation';
-    case 'nintendo':
-      return 'Nintendo Switch';
-  }
-}
-
-/**
- * Get platform color for badges
- */
-export function getPlatformColor(platform: Platform): string {
-  switch (platform) {
-    case 'steam':
-      return '#1b2838'; // Steam blue-black
-    case 'psn':
-      return '#003087'; // PlayStation blue
-    case 'nintendo':
-      return '#e60012'; // Nintendo red
-  }
-}
+// Re-exported so existing importers of unified-games keep working; these are
+// pure client-safe helpers defined in platform.ts.
+export { type Platform, getPlatformName, getPlatformColor } from './platform';

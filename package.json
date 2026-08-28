@@ -39,6 +39,7 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
     "firebase-tools": "^15.25.1",
+    "sharp": "^0.34.4",
     "vitest": "^3.0.0"
   }
 }
