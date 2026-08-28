@@ -41,7 +41,7 @@ jobs:
           echo "TMDB_ACCESS_TOKEN=${{ secrets.TMDB_ACCESS_TOKEN }}" >> .env
           echo "TMDB_ACCOUNT_OBJECT_ID=${{ secrets.TMDB_ACCOUNT_OBJECT_ID }}" >> .env
           echo "TMDB_TV_LIST_ID=${{ secrets.TMDB_TV_LIST_ID }}" >> .env
-          echo "ANILIST_USERNAME=${{ secrets.ANILIST_USERNAME }}" >> .env
+          echo "ANILIST_USERNAME=${{ secrets.ANILIST_USERNAME || 'Hayden0325' }}" >> .env
 
       - name: Install Puppeteer Chrome
         run: npx puppeteer browsers install chrome
