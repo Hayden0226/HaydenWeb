@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
-import BooksFilter from '../components/BooksFilter';
+import BooksTabs from '../components/BooksTabs';
 import StatGrid from '../components/StatGrid.astro';
 import { getGoodreadsData } from '../utils/goodreads';
 
@@ -27,6 +27,11 @@ if (goodreadsData && goodreadsData.books.length > 0) {
   // Fallback to content collection
   books = await getCollection('books');
 }
+
+// Tab groups: overview (all), favorites (5-star reads), watchlist (want to read)
+const favorites = books.filter((b: any) => b.data.rating === 5);
+const watchlist = books.filter((b: any) => b.data.status === 'want-to-read');
+const hasAny = books.length > 0;
 ---
 
 <BaseLayout
@@ -40,18 +45,9 @@ if (goodreadsData && goodreadsData.books.length > 0) {
       </h1>
     </div>
 
-    {books.length > 0 && (
+    {hasAny && (
       <section class="mb-20">
-        <div class="flex items-center justify-between mb-8">
-          <h2 class="text-3xl font-bold" style="color: var(--text-primary);">
-            My Library
-          </h2>
-          <span class="text-sm" style="color: var(--text-secondary);">
-            {books.length} {books.length === 1 ? 'book' : 'books'}
-          </span>
-        </div>
-
-        <BooksFilter client:load books={books} />
+        <BooksTabs client:load overview={books} favorites={favorites} watchlist={watchlist} />
 
         <StatGrid title="Reading Stats" stats={[
           { value: books.filter(b => b.data.status === 'finished').length, label: 'Finished' },

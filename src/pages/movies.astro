@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import MoviesFilter from '../components/MoviesFilter';
+import MoviesTabs from '../components/MoviesTabs';
 import StatGrid from '../components/StatGrid.astro';
 import { getLetterboxdData } from '../utils/letterboxd';
 
@@ -26,6 +26,24 @@ if (letterboxdData && letterboxdData.movies.length > 0) {
     }
   }));
 }
+
+// Tab groups: overview (all diary), favorites (5-star films), watchlist (to watch)
+const favorites = movies.filter(m => m.data.rating === 5);
+const watchlist = (letterboxdData?.watchlist ?? []).map(w => ({
+  data: {
+    title: w.title,
+    year: w.year,
+    releaseDate: w.releaseDate,
+    director: w.director,
+    posterImage: w.posterImage,
+    rating: w.rating,
+    watchedDate: w.watchedDate,
+    reviewText: w.reviewText,
+    link: w.link,
+    rewatch: w.rewatch,
+  }
+}));
+const hasAny = movies.length > 0 || watchlist.length > 0;
 ---
 
 <BaseLayout
@@ -39,18 +57,9 @@ if (letterboxdData && letterboxdData.movies.length > 0) {
       </h1>
     </div>
 
-    {movies.length > 0 && (
+    {hasAny && (
       <section class="mb-20">
-        <div class="flex items-center justify-between mb-8">
-          <h2 class="text-3xl font-bold" style="color: var(--text-primary);">
-            My Film Diary
-          </h2>
-          <span class="text-sm" style="color: var(--text-secondary);">
-            {movies.length} {movies.length === 1 ? 'film' : 'films'}
-          </span>
-        </div>
-
-        <MoviesFilter client:load movies={movies} />
+        <MoviesTabs client:load overview={movies} favorites={favorites} watchlist={watchlist} />
 
         <StatGrid title="Viewing Stats" stats={[
           { value: movies.length, label: 'Total Films' },
@@ -61,7 +70,7 @@ if (letterboxdData && letterboxdData.movies.length > 0) {
       </section>
     )}
 
-    {movies.length === 0 && (
+    {!hasAny && (
       <div class="text-center py-12">
         <p class="text-lg" style="color: var(--text-secondary);">
           Couldn't load movie data right now — check back soon.

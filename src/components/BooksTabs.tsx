@@ -1,5 +1,5 @@
 import MediaTabs from './MediaTabs';
-import TVFilter from './TVFilter';
+import BooksFilter from './BooksFilter';
 
 interface Props {
   overview: any[];
@@ -7,7 +7,7 @@ interface Props {
   watchlist: any[];
 }
 
-export default function TVTabs({ overview, favorites, watchlist }: Props) {
+export default function BooksTabs({ overview, favorites, watchlist }: Props) {
   return (
     <MediaTabs
       tabs={[
@@ -16,7 +16,7 @@ export default function TVTabs({ overview, favorites, watchlist }: Props) {
         { id: 'watchlist', label: '待看 Watchlist' },
       ]}
       groups={{ overview, favorites, watchlist }}
-      renderGrid={(items) => <TVFilter shows={items} />}
+      renderGrid={(items) => <BooksFilter books={items} />}
     />
   );
 }

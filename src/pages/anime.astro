@@ -56,7 +56,8 @@ const watchingCount = anime.filter(a => a.data.status === 'watching').length;
 const completedCount = anime.filter(a => a.data.status === 'completed').length;
 const scoredCount = anime.filter(a => a.data.score && a.data.score > 0).length;
 const top10Count = anime.filter(a => a.data.score === 10).length;
-const hasAny = anime.length > 0 || favourites.length > 0;
+const watchlist = anime.filter(a => a.data.status === 'plan_to_watch');
+const hasAny = anime.length > 0 || favourites.length > 0 || watchlist.length > 0;
 ---
 
 <BaseLayout
@@ -72,7 +73,7 @@ const hasAny = anime.length > 0 || favourites.length > 0;
 
     {hasAny && (
       <section class="mb-20">
-        <AnimeTabs client:load overview={anime} favourites={favourites} />
+        <AnimeTabs client:load overview={anime} favourites={favourites} watchlist={watchlist} />
 
         <StatGrid title="Viewing Stats" stats={[
           { value: completedCount, label: 'Completed' },

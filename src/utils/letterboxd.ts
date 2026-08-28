@@ -27,6 +27,7 @@ export interface LetterboxdMovie {
 
 export interface LetterboxdData {
   movies: LetterboxdMovie[];
+  watchlist: LetterboxdMovie[];
   timestamp: number;
 }
 
@@ -35,7 +36,11 @@ export interface LetterboxdData {
  * Includes retry logic for transient failures
  * Accepts a shared browser instance and creates a new page (tab) per call.
  */
-async function scrapePage(browser: Awaited<ReturnType<Awaited<typeof import('puppeteer-extra')>['default']['launch']>>, url: string): Promise<{films: LetterboxdMovie[], maxPage: number}> {
+async function scrapePage(
+  browser: Awaited<ReturnType<Awaited<typeof import('puppeteer-extra')>['default']['launch']>>,
+  url: string,
+  allowEmpty = false
+): Promise<{films: LetterboxdMovie[], maxPage: number}> {
   return withRetry(
     async () => {
       let page: Awaited<ReturnType<typeof browser.newPage>> | null = null;
@@ -55,7 +60,15 @@ async function scrapePage(browser: Awaited<ReturnType<Awaited<typeof import('pup
           { timeout: 15000 }
         ).catch(() => {});
 
-        await page.waitForSelector('.poster-list', { timeout: 10000 });
+        try {
+          await page.waitForSelector('.poster-list', { timeout: allowEmpty ? 5000 : 10000 });
+        } catch (error) {
+          // The diary always has films, but an empty watchlist has no poster list.
+          if (!allowEmpty) throw error;
+          await page.close();
+          page = null;
+          return { films: [], maxPage: 1 };
+        }
 
         // Extract film data from the listing HTML. Each card carries its slug and
         // film id (in data-postered-identifier), which is everything needed to build
@@ -232,12 +245,96 @@ async function fetchPosterFromFilmPage(filmLink: string): Promise<string | null>
 }
 
 /**
- * Get all Letterboxd data by scraping all paginated pages
+ * Scrape every paginated page of a Letterboxd list (diary or watchlist).
+ * Pages are fetched serially with a small gap: parallel hits from a single
+ * datacenter IP are what trip Cloudflare's bot detection.
+ */
+async function scrapeList(
+  browser: Awaited<ReturnType<Awaited<typeof import('puppeteer-extra')>['default']['launch']>>,
+  basePath: string,
+  label: string
+): Promise<LetterboxdMovie[]> {
+  const allFilms: LetterboxdMovie[] = [];
+  const allowEmpty = basePath.startsWith('/watchlist');
+
+  const firstUrl = `https://letterboxd.com/${LETTERBOXD_USERNAME}${basePath}`;
+  log.info(`Fetching ${label} page 1...`);
+  const { films: firstPageFilms, maxPage } = await scrapePage(browser, firstUrl, allowEmpty);
+  allFilms.push(...firstPageFilms);
+  log.info(`Found ${maxPage} total pages for ${label}`);
+
+  for (let pageNum = 2; pageNum <= maxPage; pageNum++) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    log.info(`Fetching ${label} page ${pageNum}...`);
+    const pageUrl = `https://letterboxd.com/${LETTERBOXD_USERNAME}${basePath}page/${pageNum}/`;
+    const { films } = await scrapePage(browser, pageUrl, allowEmpty);
+    allFilms.push(...films);
+  }
+
+  return allFilms;
+}
+
+/**
+ * Verify/repair every poster URL. Each one that ships is either a HEAD-verified
+ * CDN URL or the authoritative film-page poster — no unverified guess reaches
+ * the page, so there are no silent misses.
+ */
+async function resolvePosters(movies: LetterboxdMovie[]): Promise<void> {
+  const headOk = (u: string) =>
+    fetch(u, { method: 'HEAD' }).then(res => res.ok).catch(() => false);
+
+  // Toggle a trailing release-year on the slug of a constructed poster URL, e.g.
+  // "...667550-the-fall-guy-2024-0-230-..." <-> "...667550-the-fall-guy-0-230-...".
+  const yearToggledPoster = (posterUrl: string, year?: number): string | null => {
+    if (!year) return null;
+    const m = /^(.*\/\d+-)(.+?)(-0-230-0-345-crop\.jpg.*)$/.exec(posterUrl);
+    if (!m) return null;
+    const [, prefix, slug, suffix] = m;
+    const yearSuffix = `-${year}`;
+    const toggled = slug.endsWith(yearSuffix)
+      ? slug.slice(0, -yearSuffix.length)
+      : `${slug}${yearSuffix}`;
+    return `${prefix}${toggled}${suffix}`;
+  };
+
+  const limit = pLimit(10);
+  await Promise.all(movies.map((movie, i) => limit(async () => {
+    if (!movie.link) return;
+
+    const constructed = movie.posterImage;
+    const haveConstructed = !!constructed && constructed.includes('/film-poster/');
+
+    // Fast path: the constructed URL already works.
+    if (haveConstructed && await headOk(constructed)) return;
+
+    // Cheap deterministic fix: the same poster with the year added/removed.
+    if (haveConstructed) {
+      const alt = yearToggledPoster(constructed, movie.year);
+      if (alt && await headOk(alt)) {
+        movies[i].posterImage = alt;
+        return;
+      }
+    }
+
+    // Authoritative fallback: read the poster straight from the film page.
+    log.info(`Resolving poster for ${movie.title}...`);
+    const fixedPoster = await fetchPosterFromFilmPage(movie.link);
+    if (fixedPoster) {
+      movies[i].posterImage = fixedPoster;
+    } else {
+      log.error(`Could not resolve poster for ${movie.title}`);
+    }
+  })));
+}
+
+/**
+ * Get all Letterboxd data by scraping all paginated pages of the diary and
+ * the watchlist.
  */
 export async function getLetterboxdData(): Promise<LetterboxdData | null> {
   // Check cache first
   const cached = await cache.get();
-  if (cached) {
+  if (cached && Array.isArray(cached.movies) && Array.isArray(cached.watchlist)) {
     return cached;
   }
 
@@ -248,97 +345,29 @@ export async function getLetterboxdData(): Promise<LetterboxdData | null> {
 
   log.info('Fetching Letterboxd data...');
 
-  // Launch browser once and share across all page scrapes
-  const browser = await launchStealthBrowser([
-    '--disable-blink-features=AutomationControlled',
-  ]);
-
+  let browser: Awaited<ReturnType<typeof launchStealthBrowser>> | null = null;
   try {
-    const allMovies: LetterboxdMovie[] = [];
+    // Launch browser once and share across all page scrapes
+    browser = await launchStealthBrowser([
+      '--disable-blink-features=AutomationControlled',
+    ]);
 
-    // Scrape first page to determine total number of pages
-    const firstUrl = `https://letterboxd.com/${LETTERBOXD_USERNAME}/films/`;
-    log.info('Fetching page 1...');
-    const { films: firstPageFilms, maxPage } = await scrapePage(browser, firstUrl);
-    allMovies.push(...firstPageFilms);
+    const movies = await scrapeList(browser, '/films/', 'films');
+    const watchlist = await scrapeList(browser, '/watchlist/', 'watchlist');
 
-    log.info(`Found ${maxPage} total pages`);
-
-    // Fetch remaining listing pages one at a time with a small gap. Parallel
-    // hits from a single datacenter IP are what trip Cloudflare's bot
-    // detection (the cause of the intermittent mornings where pages 2+ failed
-    // every retry while page 1 was fine). A serial scrape of ~5 pages costs
-    // only a few seconds.
-    for (let pageNum = 2; pageNum <= maxPage; pageNum++) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      log.info(`Fetching page ${pageNum}...`);
-      const pageUrl = `https://letterboxd.com/${LETTERBOXD_USERNAME}/films/page/${pageNum}/`;
-      const { films } = await scrapePage(browser, pageUrl);
-      allMovies.push(...films);
-    }
-
-    // A poster URL is correct only if the CDN actually serves it. The film id pins
-    // the film, so any HEAD 200 is guaranteed to be the right poster.
-    const headOk = (u: string) =>
-      fetch(u, { method: 'HEAD' }).then(res => res.ok).catch(() => false);
-
-    // Toggle a trailing release-year on the slug of a constructed poster URL, e.g.
-    // "...667550-the-fall-guy-2024-0-230-..." <-> "...667550-the-fall-guy-0-230-...".
-    // The poster filename carries the year for some films and not others, regardless
-    // of the listing slug, so we try the opposite form before the authoritative fetch.
-    const yearToggledPoster = (posterUrl: string, year?: number): string | null => {
-      if (!year) return null;
-      const m = /^(.*\/\d+-)(.+?)(-0-230-0-345-crop\.jpg.*)$/.exec(posterUrl);
-      if (!m) return null;
-      const [, prefix, slug, suffix] = m;
-      const yearSuffix = `-${year}`;
-      const toggled = slug.endsWith(yearSuffix)
-        ? slug.slice(0, -yearSuffix.length)
-        : `${slug}${yearSuffix}`;
-      return `${prefix}${toggled}${suffix}`;
-    };
-
-    // Verify/repair every poster. Each one that ships is either a HEAD-verified CDN
-    // URL or the authoritative film-page poster — no unverified guess reaches the
-    // page, so there are no silent misses.
-    const limit = pLimit(10);
-    await Promise.all(allMovies.map((movie, i) => limit(async () => {
-      if (!movie.link) return;
-
-      const constructed = movie.posterImage;
-      const haveConstructed = !!constructed && constructed.includes('/film-poster/');
-
-      // Fast path: the constructed URL already works.
-      if (haveConstructed && await headOk(constructed)) return;
-
-      // Cheap deterministic fix: the same poster with the year added/removed.
-      if (haveConstructed) {
-        const alt = yearToggledPoster(constructed, movie.year);
-        if (alt && await headOk(alt)) {
-          allMovies[i].posterImage = alt;
-          return;
-        }
-      }
-
-      // Authoritative fallback: read the poster straight from the film page.
-      log.info(`Resolving poster for ${movie.title}...`);
-      const fixedPoster = await fetchPosterFromFilmPage(movie.link);
-      if (fixedPoster) {
-        allMovies[i].posterImage = fixedPoster;
-      } else {
-        log.error(`Could not resolve poster for ${movie.title}`);
-      }
-    })));
+    await resolvePosters(movies);
+    await resolvePosters(watchlist);
 
     const data: LetterboxdData = {
-      movies: allMovies,
+      movies,
+      watchlist,
       timestamp: Date.now(),
     };
 
     // Save to cache
     await cache.set(data);
 
-    log.info(`Fetched ${allMovies.length} movies from Letterboxd across ${maxPage} pages`);
+    log.info(`Fetched ${movies.length} movies and ${watchlist.length} watchlist from Letterboxd`);
 
     return data;
   } catch (error) {
@@ -353,6 +382,6 @@ export async function getLetterboxdData(): Promise<LetterboxdData | null> {
     }
     return null;
   } finally {
-    await browser.close().catch(() => {});
+    await browser?.close().catch(() => {});
   }
 }
