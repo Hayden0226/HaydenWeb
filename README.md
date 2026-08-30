@@ -27,6 +27,42 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 - **Toodles 纯前端转换**：音频 / 视频 / 图片共 23 种转换，由 FFmpeg.wasm 驱动，全程在浏览器本地完成、不上传文件，转换结果保留原文件名。
 - **定时自动更新**：GitHub Actions 每 6 小时重建一次，音乐、书影音、游戏等数据自动保持新鲜。
 
+## 最近更新
+
+<details open>
+<summary><strong>2026-08-30</strong> · 头像本地化与 README 重写</summary>
+
+- **头像本地化**：Home 页头像、SEO 与 OG 分享图不再依赖 GitHub 头像外链，改用仓库内置的 `public/images/avatar.png`。
+- **README 全面重写**：重新组织简介、页面、亮点、数据源、环境变量、部署与维护备忘等章节，补齐运行与部署说明。
+
+</details>
+
+<details>
+<summary><strong>2026-08-30</strong> · Games 三视图与成就面板完善</summary>
+
+- **Steam 库三视图**：Games 新增「总览 / 收藏夹 / 最近」三个 Tab，收藏夹从本机 Steam 云配置导出（`src/data/steam-favorites.ts`），默认按时长排序。
+- **成就面板统一**：三个 Tab 共用同一个成就面板，点击任意卡片在页面下方展开，避免重复弹出。
+- **隐藏成就与全球统计**：隐藏成就点击揭晓并显示全球完成百分比，描述缺失时给出提示。
+- **封面兜底**：修复《Game of Thrones Kingsroad》与《Real Pool 3D - Poolians》封面缺失，新增 `src/data/steam-cover-overrides.ts` 映射。
+- **数字对齐**：全站数字改用 lining numerals，修复数字末尾上下错位。
+
+</details>
+
+<details>
+<summary><strong>2026-08-28</strong> · Steam 成就面板与游戏卡片视觉</summary>
+
+- **成就面板上线**：点击游戏卡片展开成就面板，支持「我的成就 / 全球成就」切换；面板背景与成就卡片视觉逐步统一（半透明 → 实色、统一卡片高度、悬停光晕）。
+- **游戏卡片视觉**：封面按 Steam 竖版比例完整展示，悬停放大并带封面主色光晕；轮播支持鼠标滚轮横向滚动。
+
+</details>
+
+<details>
+<summary><strong>2026-08-27</strong> · Toodles 转换引擎本地化</summary>
+
+- **FFmpeg 本地托管**：FFmpeg core 改用 ESM 构建并托管在仓库内（`public/ffmpeg/`），修复从 CDN 加载失败导致的转换报错。
+
+</details>
+
 ## 数据源
 
 | 页面 | 数据源 | 状态 |
