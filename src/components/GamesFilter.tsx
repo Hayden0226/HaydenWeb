@@ -80,7 +80,7 @@ function GamesFilterInner({ games, onSelect }: GamesFilterProps) {
         },
       },
     ],
-    defaultSort: 'lastPlayed',
+    defaultSort: 'playtime',
     card: {
       getKey: (g) => g.id,
       getTitle: (g) => g.name,
