@@ -1,14 +1,25 @@
 import type { APIRoute } from 'astro';
-import { getSteamStats, getSteamAchievementDetails } from '../../../utils/steam';
+import { getSteamStats, getSteamAchievementDetails, getFamilyLibraryMembers } from '../../../utils/steam';
 import { createLogger } from '../../../utils/logger';
 
 const log = createLogger('AchievementsAPI');
 
 export async function getStaticPaths() {
-  const stats = await getSteamStats();
-  if (!stats) return [];
-  return stats.topPlayedGames.map((game) => ({
-    params: { appid: String(game.appid) },
+  const [stats, members] = await Promise.all([
+    getSteamStats(),
+    getFamilyLibraryMembers(),
+  ]);
+  const appids = new Set<number>();
+  for (const game of stats?.topPlayedGames ?? []) {
+    appids.add(game.appid);
+  }
+  for (const member of members) {
+    for (const game of member.games) {
+      appids.add(game.appid);
+    }
+  }
+  return [...appids].map((appid) => ({
+    params: { appid: String(appid) },
   }));
 }
 
