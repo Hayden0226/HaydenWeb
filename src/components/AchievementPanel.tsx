@@ -3,10 +3,10 @@ import type { UnifiedGame } from '../utils/unified-games';
 import type { SteamAchievement, SteamGlobalAchievement } from '../utils/steam';
 
 // The achievement panel uses a translucent near-black so the page shows
-// through, with white text for contrast. Cards share the Games accent glow.
+// through. Cards are solid and glow with a soft white halo on hover.
 const PANEL_BG = 'rgba(28,25,23,0.86)';
 const PANEL_BORDER = 'rgba(255,255,255,0.14)';
-const CARD_BG = 'rgba(255,255,255,0.08)';
+const CARD_BG = '#262b33';
 const TRACK_BG = 'rgba(255,255,255,0.14)';
 const TEXT_PRIMARY = '#ffffff';
 const TEXT_SECONDARY = 'rgba(255,255,255,0.75)';
@@ -96,18 +96,18 @@ export default function AchievementPanel({ game, achievements, global, loading, 
             return (
               <div
                 key={a.apiname}
-                className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(12,74,110,0.5)]"
+                className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(255,255,255,0.22)]"
               >
                 <div
                   className="absolute -inset-3 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                   style={{
-                    background: 'radial-gradient(ellipse at 50% 50%, var(--accent), transparent 78%)',
+                    background: 'radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.55), transparent 78%)',
                     filter: 'blur(16px)',
                   }}
                 />
                 <div
-                  className="relative flex gap-3 p-3 rounded-lg"
-                  style={{ backgroundColor: CARD_BG, opacity: a.achieved ? 1 : 0.6 }}
+                  className="relative flex gap-3 p-3 rounded-lg h-full"
+                  style={{ backgroundColor: CARD_BG, opacity: a.achieved ? 1 : 0.6, minHeight: 88 }}
                 >
                   {secret ? (
                     <div
@@ -129,16 +129,12 @@ export default function AchievementPanel({ game, achievements, global, loading, 
                     <div className="font-semibold text-sm" style={{ color: a.achieved ? TEXT_PRIMARY : TEXT_SECONDARY }}>
                       {secret ? '？？？' : a.title}
                     </div>
-                    {secret ? (
-                      <div className="text-xs mt-0.5" style={{ color: TEXT_SECONDARY }}>隐藏成就，解锁后才会显示详情。</div>
-                    ) : a.description && (
-                      <div className="text-xs mt-0.5 line-clamp-2" style={{ color: TEXT_SECONDARY }}>{a.description}</div>
-                    )}
-                    {a.achieved && a.unlockTime && (
-                      <div className="text-xs mt-1" style={{ color: PROGRESS_FILL }}>
-                        ✓ {new Date(a.unlockTime * 1000).toLocaleDateString('zh-CN')}
-                      </div>
-                    )}
+                    <div className="text-xs mt-0.5 line-clamp-2 min-h-[2rem]" style={{ color: TEXT_SECONDARY }}>
+                      {secret ? '隐藏成就，解锁后才会显示详情。' : (a.description || '')}
+                    </div>
+                    <div className="text-xs mt-1 min-h-[1rem]" style={{ color: PROGRESS_FILL }}>
+                      {a.achieved && a.unlockTime ? `✓ ${new Date(a.unlockTime * 1000).toLocaleDateString('zh-CN')}` : ''}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -154,18 +150,18 @@ export default function AchievementPanel({ game, achievements, global, loading, 
             return (
               <div
                 key={a.apiname}
-                className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(12,74,110,0.5)]"
+                className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(255,255,255,0.22)]"
               >
                 <div
                   className="absolute -inset-3 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                   style={{
-                    background: 'radial-gradient(ellipse at 50% 50%, var(--accent), transparent 78%)',
+                    background: 'radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.55), transparent 78%)',
                     filter: 'blur(16px)',
                   }}
                 />
                 <div
-                  className="relative flex gap-3 p-3 rounded-lg"
-                  style={{ backgroundColor: CARD_BG }}
+                  className="relative flex gap-3 p-3 rounded-lg h-full"
+                  style={{ backgroundColor: CARD_BG, minHeight: 88 }}
                 >
                   {secret ? (
                     <div
