@@ -16,8 +16,8 @@
   --accent-surface-fg: var(--accent-fg);
   --border: #e7e5e4;
   --shadow: rgba(0, 0, 0, 0.05);
-  --font-primary: 'Georgia', 'Cambria', 'Times New Roman', serif;
-  --font-secondary: 'Georgia', 'Cambria', 'Times New Roman', serif;
+  --font-primary: 'Cambria', 'Georgia', 'Times New Roman', serif;
+  --font-secondary: 'Cambria', 'Georgia', 'Times New Roman', serif;
   --border-radius: 2px;
 
   /* Astro/Shiki syntax highlighting defaults (light theme) */
@@ -48,8 +48,8 @@
   --accent-surface-fg: var(--accent-fg);
   --border: #e7e5e4;
   --shadow: rgba(0, 0, 0, 0.05);
-  --font-primary: 'Georgia', 'Cambria', 'Times New Roman', serif;
-  --font-secondary: 'Georgia', 'Cambria', 'Times New Roman', serif;
+  --font-primary: 'Cambria', 'Georgia', 'Times New Roman', serif;
+  --font-secondary: 'Cambria', 'Georgia', 'Times New Roman', serif;
   --border-radius: 2px;
 }
 
@@ -58,6 +58,7 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-secondary);
+  font-variant-numeric: lining-nums tabular-nums;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
