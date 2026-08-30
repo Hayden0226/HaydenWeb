@@ -63,6 +63,24 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 
 </details>
 
+<details>
+<summary><strong>2026-08-27</strong> · 书影音数据源与 Toodles 上线</summary>
+
+- **Movies 接入 Letterboxd**：Movies 页通过 Puppeteer 爬取 Letterboxd 观影记录并带评分，CI 使用 Puppeteer 自管 Chrome。
+- **TV 接入 TMDB**：TV 页拆成「总览 / 收藏 / 待看」三视图，打分即视为已看，账户 Object ID 从 token 自动解码，收藏端点修复。
+- **Toodles 上线**：浏览器内媒体转换工具上线，由 FFmpeg.wasm（音频 / 视频）+ canvas（图片）驱动，共 23 种转换；分类升级为大卡片，拖放区带文件信息与预览反馈，悬停 / 点击均有交互反馈，转换结果保留原文件名。
+
+</details>
+
+<details>
+<summary><strong>2026-08-26</strong> · 站点初始化与改造</summary>
+
+- **站点初始化**：从上游克隆后清掉上游内容，改写成 Hayden 个人站，并让内链适配 GitHub Pages 子路径。
+- **自定义域名**：站点切换到 `i.haydenweb.com` 子域名。
+- **Books 接入 Goodreads**：Books 页接入 Goodreads 公开 RSS 书架。
+
+</details>
+
 ## 数据源
 
 | 页面 | 数据源 | 状态 |
