@@ -1,5 +1,5 @@
 // Unified game data structure combining Steam, PSN, and Nintendo
-import { getSteamStats, getSteamAchievements, getSteamLibraryUrl, type SteamGame, type SteamStats, type SteamAchievementInfo } from './steam';
+import { getSteamStats, getSteamAchievements, getSteamLibraryUrl, getRecentlyPlayedGames, type SteamGame, type SteamStats, type SteamAchievementInfo } from './steam';
 import { getFamilyLibraryMembers, type FamilyMemberLibrary } from './steam';
 import { getPSNData, type PSNGame, type PSNStats } from './psn';
 import { getNintendoStats, type NintendoGame, type NintendoStats } from './nintendo';
@@ -64,7 +64,9 @@ export interface AllGamesResult {
  */
 export async function buildFamilySharedGame(
   game: SteamGame,
-  member: FamilyMemberLibrary
+  member: FamilyMemberLibrary,
+  achievements: SteamAchievementInfo | null = null,
+  recent?: SteamGame
 ): Promise<UnifiedGame> {
   const image = getSteamLibraryUrl(game.appid);
   const glowColor = image ? await getCoverGlowColor(image) : null;
@@ -76,9 +78,12 @@ export async function buildFamilySharedGame(
     headerImage: image,
     glowColor: glowColor ?? undefined,
     sharedFrom: member.personaname,
+    favorite: STEAM_FAVORITE_APPIDS.includes(game.appid),
     steamData: {
       appid: game.appid,
-      playtimeMinutes: 0, // Never mix another member's playtime into personal stats
+      playtimeMinutes: recent?.playtime_forever ?? 0,
+      lastPlayed: recent?.rtime_last_played,
+      achievements: achievements ?? undefined,
     },
   };
 }
@@ -88,15 +93,17 @@ export async function buildFamilySharedGame(
  * library, so they can be shown separately from personal game data.
  */
 export async function getFamilySharedGames(): Promise<UnifiedGame[]> {
-  const [members, ownStats] = await Promise.all([
+  const [members, ownStats, recentGames] = await Promise.all([
     getFamilyLibraryMembers(),
     getSteamStats(),
+    getRecentlyPlayedGames(),
   ]);
   if (members.length === 0) {
     return [];
   }
 
   const ownAppids = new Set((ownStats?.ownedGames ?? []).map((g) => g.appid));
+  const recentByAppid = new Map(recentGames.map((g) => [g.appid, g]));
   const shared: UnifiedGame[] = [];
 
   for (const member of members) {
@@ -104,7 +111,8 @@ export async function getFamilySharedGames(): Promise<UnifiedGame[]> {
       if (ownAppids.has(game.appid)) {
         continue; // Already owned — belongs in the personal library
       }
-      shared.push(await buildFamilySharedGame(game, member));
+      const achievements = await getSteamAchievements(game.appid);
+      shared.push(await buildFamilySharedGame(game, member, achievements, recentByAppid.get(game.appid)));
     }
   }
   return shared;

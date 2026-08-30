@@ -85,7 +85,6 @@ function GamesFilterInner({ games, onSelect }: GamesFilterProps) {
       getKey: (g) => g.id,
       getTitle: (g) => g.name,
       getSubtitle: (g) => {
-        if (g.sharedFrom) return '家庭共享';
         const hours = Math.floor((g.steamData?.playtimeMinutes ?? 0) / 60);
         const last = g.steamData?.lastPlayed;
         const parts = [hours > 0 ? `${hours}h` : 'Not played'];

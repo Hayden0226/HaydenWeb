@@ -109,8 +109,8 @@ export default function GameCard({ game, onSelect }: GameCardProps) {
             {/* Game Title */}
             <h3 className="font-bold text-sm line-clamp-2">{game.name}</h3>
 
-            {/* Steam Stats (hidden for family-shared games to avoid mixing in another member's data) */}
-            {game.steamData && !game.sharedFrom && (
+            {/* Steam Stats — for family-shared games this is the viewer's own data */}
+            {game.steamData && (
               <div className="text-xs space-y-1">
                 <div className="flex justify-between">
                   <span style={{ color: 'var(--text-secondary)' }}>Playtime:</span>

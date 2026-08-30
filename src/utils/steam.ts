@@ -412,6 +412,10 @@ const familyCache = new FileCache<{ members: FamilyMemberLibrary[]; timestamp: n
   ttl: 24 * 60 * 60 * 1000,
 });
 
+const recentCache = new FileCache<{ games: SteamGame[]; timestamp: number }>('steam-recent', {
+  ttl: 24 * 60 * 60 * 1000,
+});
+
 function getFamilyMemberIds(): string[] {
   const raw = (import.meta.env.STEAM_FAMILY_IDS as string | undefined) ?? '';
   return raw
@@ -465,4 +469,41 @@ export async function getFamilyLibraryMembers(): Promise<FamilyMemberLibrary[]> 
   await familyCache.set({ members: result, timestamp: Date.now() });
   log.info(`Fetched Steam family libraries: ${result.map((m) => `${m.personaname} (${m.totalGames} games)`).join(', ')}`);
   return result;
+}
+
+/**
+ * Games played by the viewer's own account in the last two weeks.
+ * Steam Family shared games that were actually played appear here with the
+ * viewer's own playtime, which is the only public source for that data.
+ */
+export async function getRecentlyPlayedGames(): Promise<SteamGame[]> {
+  if (!STEAM_API_KEY || !STEAM_ID) {
+    return [];
+  }
+
+  const cached = await recentCache.get();
+  if (cached) {
+    return cached.games;
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${BASE_URL}/IPlayerService/GetRecentlyPlayedGames/v0001/?key=${STEAM_API_KEY}&steamid=${STEAM_ID}&format=json`,
+      undefined,
+      {
+        maxRetries: 2,
+        initialDelayMs: 1000,
+        onRetry: (error, attempt) => {
+          log.info(`Recently played retry ${attempt}: ${error.message}`);
+        },
+      }
+    );
+    const data = await response.json();
+    const games: SteamGame[] = data.response?.games ?? [];
+    await recentCache.set({ games, timestamp: Date.now() });
+    return games;
+  } catch (error) {
+    log.error('Error fetching recently played games:', error);
+    return [];
+  }
 }
