@@ -1,6 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AnimatedCard from '../components/AnimatedCard';
+import { getCollection } from 'astro:content';
+
+const featuredProjects = (await getCollection('projects'))
+  .filter((project) => project.data.featured)
+  .sort((a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf());
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <BaseLayout
@@ -95,35 +101,21 @@ import AnimatedCard from '../components/AnimatedCard';
             Featured Projects
           </h3>
           <div class="space-y-6">
-            <div class="border-l-4 pl-4" style="border-color: var(--accent);">
-              <div class="flex justify-between items-start mb-2">
-                <div>
-                  <h4 class="font-bold text-lg" style="color: var(--text-primary);">
-                    <a href="https://github.com/Hayden0226/Photography" target="_blank" rel="noopener noreferrer" class="accent-link">Photography</a>
-                  </h4>
-                  <p style="color: var(--text-secondary);">Personal Photography Gallery</p>
+            {featuredProjects.map((project) => (
+              <div class="border-l-4 pl-4" style="border-color: var(--accent);">
+                <div class="flex justify-between items-start mb-2">
+                  <div>
+                    <h4 class="font-bold text-lg" style="color: var(--text-primary);">
+                      <a href={project.data.links?.github ?? `${base}projects/${project.slug}`} target="_blank" rel="noopener noreferrer" class="accent-link">{project.data.title}</a>
+                    </h4>
+                    <p style="color: var(--text-secondary);">{project.data.description}</p>
+                  </div>
+                  {project.data.technologies.length > 0 && (
+                    <span class="text-sm whitespace-nowrap" style="color: var(--text-secondary);">{project.data.technologies[0]}</span>
+                  )}
                 </div>
-                <span class="text-sm whitespace-nowrap" style="color: var(--text-secondary);">TypeScript</span>
               </div>
-              <p class="text-sm" style="color: var(--text-secondary);">
-                A personal photography gallery deeply customized from Jackyhq/Photography, deployed to GitHub Pages at <a href="https://visuals.haydenweb.com" target="_blank" rel="noopener noreferrer" class="accent-link">visuals.haydenweb.com</a>.
-              </p>
-            </div>
-
-            <div class="border-l-4 pl-4" style="border-color: var(--border);">
-              <div class="flex justify-between items-start mb-2">
-                <div>
-                  <h4 class="font-bold text-lg" style="color: var(--text-primary);">
-                    <a href="https://github.com/Hayden0226/LostFound_Office" target="_blank" rel="noopener noreferrer" class="accent-link">LostFound_Office</a>
-                  </h4>
-                  <p style="color: var(--text-secondary);">Lost &amp; Found Management System</p>
-                </div>
-                <span class="text-sm whitespace-nowrap" style="color: var(--text-secondary);">Vue</span>
-              </div>
-              <p class="text-sm" style="color: var(--text-secondary);">
-                失物招领管理系统 &mdash; a full-stack web application for managing lost and found items, built with Spring Boot and Vue 3.
-              </p>
-            </div>
+            ))}
           </div>
         </AnimatedCard>
 
