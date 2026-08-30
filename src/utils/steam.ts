@@ -25,6 +25,7 @@ interface PlayerSummary {
 
 export interface SteamStats {
   topPlayedGames: SteamGame[];
+  ownedGames: SteamGame[]; // All owned games (including never-played)
   totalGames: number;
   totalHoursPlayed: number;
   playerSummary: PlayerSummary;
@@ -353,6 +354,7 @@ export async function getSteamStats(): Promise<SteamStats | null> {
 
     const stats: SteamStats = {
       topPlayedGames: playedGames,
+      ownedGames,
       totalGames: ownedGames.length,
       totalHoursPlayed,
       playerSummary,

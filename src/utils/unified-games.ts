@@ -6,6 +6,7 @@ import { getIGDBCoverUrl, isExcludedGame, flushIGDBCache } from './igdb';
 import { getCoverGlowColor } from './cover-color';
 import { createLogger } from './logger';
 import type { Platform } from './platform';
+import { STEAM_FAVORITE_APPIDS } from '../data/steam-favorites';
 
 const log = createLogger('Games');
 
@@ -16,6 +17,7 @@ export interface UnifiedGame {
   image: string; // Card/thumbnail image
   headerImage?: string; // Larger header image for modal
   glowColor?: string; // Dominant cover color for the hover halo
+  favorite?: boolean; // In the Steam library "收藏夹" collection
 
   // Platform-specific data
   steamData?: {
@@ -69,9 +71,9 @@ export async function getAllGames(): Promise<AllGamesResult> {
   // Add Steam games
   if (steamStats) {
     log.info('Fetching IGDB covers for Steam games...');
-    const filteredSteamGames = steamStats.topPlayedGames.filter(
-      (game: SteamGame) => !isExcludedGame(game.name)
-    );
+    const filteredSteamGames = (steamStats.ownedGames ?? steamStats.topPlayedGames)
+      .filter((game: SteamGame) => !isExcludedGame(game.name))
+      .sort((a, b) => (b.rtime_last_played || 0) - (a.rtime_last_played || 0));
     const steamGames = await Promise.all(
       filteredSteamGames.map(async (game: SteamGame): Promise<UnifiedGame> => {
         const [igdbCover, achievements] = await Promise.all([
@@ -88,6 +90,7 @@ export async function getAllGames(): Promise<AllGamesResult> {
           image,
           headerImage: image,
           glowColor: glowColor ?? undefined,
+          favorite: STEAM_FAVORITE_APPIDS.includes(game.appid),
           steamData: {
             appid: game.appid,
             playtimeMinutes: game.playtime_forever,

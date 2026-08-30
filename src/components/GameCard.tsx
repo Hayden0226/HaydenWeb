@@ -85,6 +85,17 @@ export default function GameCard({ game, onSelect }: GameCardProps) {
           {getPlatformName(game.platform)}
         </div>
 
+        {/* Favorite Badge */}
+        {game.favorite && (
+          <div
+            className="absolute top-2 left-2 w-7 h-7 rounded grid place-items-center text-sm font-bold shadow-lg z-20"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-primary)' }}
+            title="收藏夹"
+          >
+            ★
+          </div>
+        )}
+
         {/* Stats Overlay - tap to show on mobile, hover on desktop */}
         <div
           className={`absolute inset-0 flex flex-col justify-end p-3 z-10 transition-opacity duration-200 ${isExpanded ? 'opacity-100' : 'opacity-0'} md:opacity-0 md:group-hover:opacity-100`}

@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import GameCarousel from '../components/GameCarousel';
-import SteamLibrary from '../components/SteamLibrary';
+import GamesTabs from '../components/GamesTabs';
 import { getAllGames } from '../utils/unified-games';
 
 // Fetch all games and stats from all platforms in a single call
@@ -41,8 +41,8 @@ const nintendoGames = allGames.filter(g => g.platform === 'nintendo');
 
         {/* Steam Games */}
         {steamStats && steamGames.length > 0 && (
-          <div class="mb-12 p-6 rounded-lg" style="background-color: var(--bg-secondary);">
-            <SteamLibrary client:load games={steamGames} stats={steamStats} />
+          <div class="mb-12">
+            <GamesTabs client:load games={steamGames} stats={steamStats} />
           </div>
         )}
 
