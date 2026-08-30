@@ -25,7 +25,7 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 
 - **Games 三视图 + 成就系统**：Steam 库按「总览（全部）/ 收藏夹 / 最近」分页展示；点击任意卡片展开成就面板，支持「我的成就 / 全球成就」切换与隐藏成就点击揭晓。收藏夹数据从本机 Steam 云配置导出（`src/data/steam-favorites.ts`），个别缺封面的游戏通过 `src/data/steam-cover-overrides.ts` 兜底。
 - **Toodles 纯前端转换**：音频 / 视频 / 图片共 23 种转换，由 FFmpeg.wasm 驱动，全程在浏览器本地完成、不上传文件，转换结果保留原文件名。
-- **定时自动更新**：GitHub Actions 每 6 小时重建一次，音乐、书影音、游戏等数据自动保持新鲜。
+- **定时自动更新**：GitHub Actions 白天每 3 小时重建一次（北京 8、11、14、17、20、23 点），音乐、书影音、游戏等数据自动保持新鲜。
 
 ## 最近更新
 
@@ -134,7 +134,7 @@ npm run dev
 
 1. 仓库 `Settings → Pages → Source` 选择 **GitHub Actions**
 2. 推送到 `main` 自动构建部署
-3. 工作流每 6 小时重新构建一次，保持数据新鲜
+3. 工作流白天每 3 小时重新构建一次（北京 8、11、14、17、20、23 点），保持数据新鲜
 4. 环境变量由工作流写入 `.env`：`LASTFM_*` / `TMDB_*` / `STEAM_*` / `IGDB_*` 从 Actions Secrets 读取，`GOODREADS_USER_ID` / `LETTERBOXD_USERNAME` / `ANILIST_USERNAME` 内置默认值
 
 > 自定义域名：`public/CNAME` 指向 `i.haydenweb.com`，DNS 已配置 CNAME 记录 `i` → `Hayden0226.github.io`。

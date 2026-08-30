@@ -18,7 +18,7 @@ Hayden 的个人网站，展示个人项目、书影音记录、游戏收藏与�
 - **媒体记录**：Books（Goodreads）、Music（Last.fm）、Movies（Letterboxd）、TV（TMDB）、Anime（AniList），多为总览 / 收藏 / 待看三视图
 - **Steam 游戏库**：总览 / 收藏夹 / 最近三视图，点击卡片查看成就（我的 / 全球），隐藏成就点击揭晓
 - **Toodles**：浏览器内媒体转换工具，FFmpeg.wasm 驱动，音频 / 视频 / 图片共 23 种转换，文件不出本机
-- **自动更新**：GitHub Actions 每 6 小时重建一次，数据自动保持新鲜
+- **自动更新**：GitHub Actions 白天每 3 小时重建一次，数据自动保持新鲜
 
 ## Live Site
 
