@@ -71,7 +71,7 @@ function GamesTabsInner({ games, stats }: GamesTabsProps) {
           if (activeId === 'recent') {
             return (
               <div className="p-6 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-                <SteamLibrary games={recent} stats={stats} />
+                <SteamLibrary games={recent} stats={stats} onSelect={handleSelect} />
               </div>
             );
           }

@@ -7,9 +7,12 @@ import AchievementPanel from './AchievementPanel';
 interface SteamLibraryProps {
   games: UnifiedGame[];
   stats?: SteamStats | null;
+  // Controlled mode: when onSelect is provided, the parent owns the selection
+  // and the achievement panel; SteamLibrary only renders stats + carousel.
+  onSelect?: (game: UnifiedGame) => void;
 }
 
-export default function SteamLibrary({ games, stats }: SteamLibraryProps) {
+export default function SteamLibrary({ games, stats, onSelect }: SteamLibraryProps) {
   const [selected, setSelected] = useState<UnifiedGame | null>(null);
   const [details, setDetails] = useState<SteamAchievementDetails | null>(null);
   const [loading, setLoading] = useState(false);
@@ -47,6 +50,10 @@ export default function SteamLibrary({ games, stats }: SteamLibraryProps) {
   }, [selected]);
 
   const handleSelect = (game: UnifiedGame) => {
+    if (onSelect) {
+      onSelect(game);
+      return;
+    }
     setSelected(game);
     // Scroll the detail panel into view on the next frame so the new content
     // doesn't jump while the user is reading the carousel.
@@ -79,18 +86,20 @@ export default function SteamLibrary({ games, stats }: SteamLibraryProps) {
           <GameCarousel games={games} title="Recent Games" onSelect={handleSelect} />
         </div>
       </div>
-      <div ref={panelRef}>
-        {selected && (
-          <AchievementPanel
-            game={selected}
-            achievements={details?.achievements ?? []}
-            global={details?.global ?? []}
-            loading={loading}
-            error={error}
-            onClose={() => setSelected(null)}
-          />
-        )}
-      </div>
+      {!onSelect && (
+        <div ref={panelRef}>
+          {selected && (
+            <AchievementPanel
+              game={selected}
+              achievements={details?.achievements ?? []}
+              global={details?.global ?? []}
+              loading={loading}
+              error={error}
+              onClose={() => setSelected(null)}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
