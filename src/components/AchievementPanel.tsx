@@ -6,7 +6,7 @@ import type { SteamAchievement, SteamGlobalAchievement } from '../utils/steam';
 // through. Cards are solid; hover glow matches the Games accent (#1c1917).
 const PANEL_BG = 'rgba(28,25,23,0.86)';
 const PANEL_BORDER = 'rgba(255,255,255,0.14)';
-const CARD_BG = '#262b33';
+const CARD_BG = '#44403c';
 const TRACK_BG = 'rgba(255,255,255,0.14)';
 const TEXT_PRIMARY = '#ffffff';
 const TEXT_SECONDARY = 'rgba(255,255,255,0.75)';
