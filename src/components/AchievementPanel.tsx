@@ -152,7 +152,7 @@ export default function AchievementPanel({ game, achievements, global, loading, 
                       </div>
                     </div>
                     <div className="text-xs mt-0.5 line-clamp-2 min-h-[2rem]" style={{ color: TEXT_SECONDARY }}>
-                      {masked ? '隐藏成就，点击查看详情。' : (a.description || '')}
+                      {masked ? '隐藏成就，点击查看详情。' : (a.description || 'Steam 未公开该成就的描述。')}
                     </div>
                     <div className="text-xs mt-1 min-h-[1rem]" style={{ color: PROGRESS_FILL }}>
                       {a.achieved && a.unlockTime ? `✓ ${new Date(a.unlockTime * 1000).toLocaleDateString('zh-CN')}` : ''}
