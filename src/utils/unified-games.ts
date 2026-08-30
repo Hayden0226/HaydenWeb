@@ -7,6 +7,7 @@ import { getCoverGlowColor } from './cover-color';
 import { createLogger } from './logger';
 import type { Platform } from './platform';
 import { STEAM_FAVORITE_APPIDS } from '../data/steam-favorites';
+import { STEAM_COVER_OVERRIDES } from '../data/steam-cover-overrides';
 
 const log = createLogger('Games');
 
@@ -81,7 +82,7 @@ export async function getAllGames(): Promise<AllGamesResult> {
           getSteamAchievements(game.appid),
         ]);
         const steamCover = getSteamLibraryUrl(game.appid);
-        const image = igdbCover || steamCover;
+        const image = STEAM_COVER_OVERRIDES[game.appid] ?? (igdbCover || steamCover);
         const glowColor = image ? await getCoverGlowColor(image) : null;
         return {
           id: `steam-${game.appid}`,
