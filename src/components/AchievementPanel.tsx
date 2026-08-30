@@ -3,7 +3,7 @@ import type { UnifiedGame } from '../utils/unified-games';
 import type { SteamAchievement, SteamGlobalAchievement } from '../utils/steam';
 
 // The achievement panel uses a translucent near-black so the page shows
-// through. Cards are solid and glow with a soft white halo on hover.
+// through. Cards are solid; hover glow matches the Games accent (#1c1917).
 const PANEL_BG = 'rgba(28,25,23,0.86)';
 const PANEL_BORDER = 'rgba(255,255,255,0.14)';
 const CARD_BG = '#262b33';
@@ -96,12 +96,12 @@ export default function AchievementPanel({ game, achievements, global, loading, 
             return (
               <div
                 key={a.apiname}
-                className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(255,255,255,0.22)]"
+                className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(28,25,23,0.4)]"
               >
                 <div
                   className="absolute -inset-3 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                   style={{
-                    background: 'radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.55), transparent 78%)',
+                    background: 'radial-gradient(ellipse at 50% 50%, #1c1917, transparent 78%)',
                     filter: 'blur(16px)',
                   }}
                 />
@@ -150,12 +150,12 @@ export default function AchievementPanel({ game, achievements, global, loading, 
             return (
               <div
                 key={a.apiname}
-                className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(255,255,255,0.22)]"
+                className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(28,25,23,0.4)]"
               >
                 <div
                   className="absolute -inset-3 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                   style={{
-                    background: 'radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.55), transparent 78%)',
+                    background: 'radial-gradient(ellipse at 50% 50%, #1c1917, transparent 78%)',
                     filter: 'blur(16px)',
                   }}
                 />
