@@ -1,14 +1,14 @@
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
+import { readFile } from 'node:fs/promises';
 
 let cachedProfileSrc: string | null = null;
 let cachedFonts: ArrayBuffer[] | null = null;
 
 async function getProfileImage(): Promise<string> {
   if (cachedProfileSrc) return cachedProfileSrc;
-  const res = await fetch('https://avatars.githubusercontent.com/u/247107814?s=512');
-  const buf = await res.arrayBuffer();
-  cachedProfileSrc = `data:image/png;base64,${Buffer.from(buf).toString('base64')}`;
+  const buf = await readFile(new URL('../../public/images/avatar.png', import.meta.url));
+  cachedProfileSrc = `data:image/png;base64,${buf.toString('base64')}`;
   return cachedProfileSrc;
 }
 
