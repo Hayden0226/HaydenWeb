@@ -50,13 +50,14 @@ function GamesTabsInner({ games, stats }: GamesTabsProps) {
   }, [selected]);
 
   const handleSelect = (game: UnifiedGame) => {
+    if (game.sharedFrom) return; // Family-shared games have no personal achievement data
     setSelected(game);
     requestAnimationFrame(() => panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   };
 
   const overview = games;
   const favorites = games.filter((g) => g.favorite);
-  const recent = games.filter((g) => (g.steamData?.playtimeMinutes ?? 0) > 0);
+  const recent = games.filter((g) => !g.sharedFrom && (g.steamData?.playtimeMinutes ?? 0) > 0);
 
   return (
     <div>

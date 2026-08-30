@@ -17,13 +17,13 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 | **Movies** | Letterboxd 观影记录：总览 / 收藏 / 待看，含评分 |
 | **TV** | TMDB 追剧：总览 / 收藏 / 待看 |
 | **Anime** | AniList 番剧：总览 / 收藏 / 待看 |
-| **Games** | Steam 游戏库：总览 / 收藏夹 / 最近，点击卡片查看成就 |
+| **Games** | Steam 游戏库：总览 / 收藏夹 / 最近，点击卡片查看成就；家庭组共享的游戏并入列表并标记「来自您的steam家庭库」 |
 | **Photography** | 跳转 [visuals.haydenweb.com](https://visuals.haydenweb.com) |
 | **Toodles** | 浏览器内媒体转换工具（音频 / 视频 / 图片） |
 
 ## 亮点
 
-- **Games 三视图 + 成就系统**：Steam 库按「总览（全部）/ 收藏夹 / 最近」分页展示；点击任意卡片展开成就面板，支持「我的成就 / 全球成就」切换与隐藏成就点击揭晓。收藏夹数据从本机 Steam 云配置导出（`src/data/steam-favorites.ts`），个别缺封面的游戏通过 `src/data/steam-cover-overrides.ts` 兜底。
+- **Games 三视图 + 成就系统**：Steam 库按「总览（全部）/ 收藏夹 / 最近」分页展示；点击任意卡片展开成就面板，支持「我的成就 / 全球成就」切换与隐藏成就点击揭晓。收藏夹数据从本机 Steam 云配置导出（`src/data/steam-favorites.ts`），个别缺封面的游戏通过 `src/data/steam-cover-overrides.ts` 兜底。家庭组共享的游戏并入总览列表、右上角标记「来自您的steam家庭库」，不混入个人时长与成就数据。
 - **Toodles 纯前端转换**：音频 / 视频 / 图片共 23 种转换，由 FFmpeg.wasm 驱动，全程在浏览器本地完成、不上传文件，转换结果保留原文件名。
 - **定时自动更新**：GitHub Actions 白天每 3 小时重建一次（北京 8、11、14、17、20、23 点），音乐、书影音、游戏等数据自动保持新鲜。
 
@@ -125,6 +125,7 @@ npm run dev
 | `TMDB_TV_LIST_ID` | TMDB 自定义列表 ID（可选，展示没打分的剧） |
 | `ANILIST_USERNAME` | AniList 用户名（Anime 页） |
 | `STEAM_API_KEY` / `STEAM_ID` | Steam Web API（Games 页） |
+| `STEAM_FAMILY_IDS` | Steam 家庭组成员 ID（逗号分隔，可选），用于展示共享游戏 |
 
 ## 部署（GitHub Pages）
 

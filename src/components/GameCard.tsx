@@ -79,10 +79,12 @@ export default function GameCard({ game, onSelect }: GameCardProps) {
 
         {/* Platform Badge */}
         <div
-          className="absolute top-2 right-2 px-2 py-1 rounded text-xs font-bold shadow-lg z-20"
+          className="absolute top-2 right-2 px-2 py-1 rounded font-bold shadow-lg z-20"
           style={{ backgroundColor: platformColor, color: '#ffffff' }}
         >
-          {getPlatformName(game.platform)}
+          <span className={game.sharedFrom ? 'text-[9px] leading-tight block max-w-[7rem] text-center' : 'text-xs'}>
+            {game.sharedFrom ? '来自您的steam家庭库' : getPlatformName(game.platform)}
+          </span>
         </div>
 
         {/* Favorite Badge */}
@@ -107,8 +109,8 @@ export default function GameCard({ game, onSelect }: GameCardProps) {
             {/* Game Title */}
             <h3 className="font-bold text-sm line-clamp-2">{game.name}</h3>
 
-            {/* Steam Stats */}
-            {game.steamData && (
+            {/* Steam Stats (hidden for family-shared games to avoid mixing in another member's data) */}
+            {game.steamData && !game.sharedFrom && (
               <div className="text-xs space-y-1">
                 <div className="flex justify-between">
                   <span style={{ color: 'var(--text-secondary)' }}>Playtime:</span>

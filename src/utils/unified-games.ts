@@ -1,5 +1,6 @@
 // Unified game data structure combining Steam, PSN, and Nintendo
 import { getSteamStats, getSteamAchievements, getSteamLibraryUrl, type SteamGame, type SteamStats, type SteamAchievementInfo } from './steam';
+import { getFamilyLibraryMembers, type FamilyMemberLibrary } from './steam';
 import { getPSNData, type PSNGame, type PSNStats } from './psn';
 import { getNintendoStats, type NintendoGame, type NintendoStats } from './nintendo';
 import { getCoverGlowColor } from './cover-color';
@@ -18,6 +19,7 @@ export interface UnifiedGame {
   headerImage?: string; // Larger header image for modal
   glowColor?: string; // Dominant cover color for the hover halo
   favorite?: boolean; // In the Steam library "收藏夹" collection
+  sharedFrom?: string; // Steam Family member this game is shared from
 
   // Platform-specific data
   steamData?: {
@@ -53,6 +55,59 @@ export interface AllGamesResult {
   steamStats: SteamStats | null;
   psnStats: PSNStats | null;
   nintendoStats: NintendoStats | null;
+}
+
+/**
+ * Build a unified game for a family member's library entry. The card is
+ * marked as family-shared and intentionally carries no playtime/achievement
+ * data of its own so only the viewer's own stats are ever displayed.
+ */
+export async function buildFamilySharedGame(
+  game: SteamGame,
+  member: FamilyMemberLibrary
+): Promise<UnifiedGame> {
+  const image = getSteamLibraryUrl(game.appid);
+  const glowColor = image ? await getCoverGlowColor(image) : null;
+  return {
+    id: `family-${member.steamid}-${game.appid}`,
+    name: game.name,
+    platform: 'steam',
+    image,
+    headerImage: image,
+    glowColor: glowColor ?? undefined,
+    sharedFrom: member.personaname,
+    steamData: {
+      appid: game.appid,
+      playtimeMinutes: 0, // Never mix another member's playtime into personal stats
+    },
+  };
+}
+
+/**
+ * Collect games shared via Steam Family that are NOT in the viewer's own
+ * library, so they can be shown separately from personal game data.
+ */
+export async function getFamilySharedGames(): Promise<UnifiedGame[]> {
+  const [members, ownStats] = await Promise.all([
+    getFamilyLibraryMembers(),
+    getSteamStats(),
+  ]);
+  if (members.length === 0) {
+    return [];
+  }
+
+  const ownAppids = new Set((ownStats?.ownedGames ?? []).map((g) => g.appid));
+  const shared: UnifiedGame[] = [];
+
+  for (const member of members) {
+    for (const game of member.games) {
+      if (ownAppids.has(game.appid)) {
+        continue; // Already owned — belongs in the personal library
+      }
+      shared.push(await buildFamilySharedGame(game, member));
+    }
+  }
+  return shared;
 }
 
 /**

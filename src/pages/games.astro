@@ -2,13 +2,16 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import GameCarousel from '../components/GameCarousel';
 import GamesTabs from '../components/GamesTabs';
-import { getAllGames } from '../utils/unified-games';
+import { getAllGames, getFamilySharedGames } from '../utils/unified-games';
 
 // Fetch all games and stats from all platforms in a single call
-const { games: allGames, steamStats, psnStats, nintendoStats } = await getAllGames();
+const [{ games: allGames, steamStats, psnStats, nintendoStats }, familySharedGames] = await Promise.all([
+  getAllGames(),
+  getFamilySharedGames(),
+]);
 
 // Pre-compute platform game lists
-const steamGames = allGames.filter(g => g.platform === 'steam');
+const steamGames = [...allGames.filter(g => g.platform === 'steam'), ...familySharedGames];
 const psnGames = allGames.filter(g => g.platform === 'psn');
 const nintendoGames = allGames.filter(g => g.platform === 'nintendo');
 ---

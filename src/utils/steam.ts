@@ -21,6 +21,8 @@ export interface SteamGame {
 
 interface PlayerSummary {
   gameextrainfo?: string; // Currently playing game name
+  personaname?: string; // Display name
+  avatarfull?: string; // Full-size avatar URL
 }
 
 export interface SteamStats {
@@ -258,15 +260,15 @@ export async function getSteamAchievementDetails(appid: number): Promise<SteamAc
  * Fetch player summary (profile info, online status, currently playing)
  * Includes retry logic for transient failures
  */
-async function getPlayerSummary(): Promise<PlayerSummary | null> {
-  if (!STEAM_API_KEY || !STEAM_ID) {
+async function getPlayerSummaryForSteamId(steamId: string): Promise<PlayerSummary | null> {
+  if (!STEAM_API_KEY || !steamId) {
     log.error('Steam API key or Steam ID not configured');
     return null;
   }
 
   try {
     const response = await fetchWithRetry(
-      `${BASE_URL}/ISteamUser/GetPlayerSummaries/v0002/?key=${STEAM_API_KEY}&steamids=${STEAM_ID}`,
+      `${BASE_URL}/ISteamUser/GetPlayerSummaries/v0002/?key=${STEAM_API_KEY}&steamids=${steamId}`,
       undefined,
       {
         maxRetries: 2,
@@ -289,18 +291,18 @@ async function getPlayerSummary(): Promise<PlayerSummary | null> {
 }
 
 /**
- * Fetch all owned games with playtime
+ * Fetch all owned games with playtime for a given Steam ID
  * Includes retry logic for transient failures
  */
-async function getOwnedGames(): Promise<SteamGame[]> {
-  if (!STEAM_API_KEY || !STEAM_ID) {
+async function getOwnedGamesForSteamId(steamId: string): Promise<SteamGame[]> {
+  if (!STEAM_API_KEY || !steamId) {
     log.error('Steam API key or Steam ID not configured');
     return [];
   }
 
   try {
     const response = await fetchWithRetry(
-      `${BASE_URL}/IPlayerService/GetOwnedGames/v0001/?key=${STEAM_API_KEY}&steamid=${STEAM_ID}&format=json&include_appinfo=true&include_played_free_games=true`,
+      `${BASE_URL}/IPlayerService/GetOwnedGames/v0001/?key=${STEAM_API_KEY}&steamid=${steamId}&format=json&include_appinfo=true&include_played_free_games=true`,
       undefined,
       {
         maxRetries: 2,
@@ -334,8 +336,8 @@ export async function getSteamStats(): Promise<SteamStats | null> {
 
   try {
     const [playerSummary, ownedGames] = await Promise.all([
-      getPlayerSummary(),
-      getOwnedGames(),
+      getPlayerSummaryForSteamId(STEAM_ID),
+      getOwnedGamesForSteamId(STEAM_ID),
     ]);
 
     if (!playerSummary) {
@@ -395,4 +397,72 @@ export function getGameCapsuleFallbacks(appid: number): string[] {
  */
 export function getSteamLibraryUrl(appid: number): string {
   return `https://cdn.akamai.steamstatic.com/steam/apps/${appid}/library_600x900.jpg`;
+}
+
+export interface FamilyMemberLibrary {
+  steamid: string;
+  personaname: string;
+  avatar?: string;
+  totalGames: number;
+  totalHoursPlayed: number;
+  games: SteamGame[];
+}
+
+const familyCache = new FileCache<{ members: FamilyMemberLibrary[]; timestamp: number }>('steam-family', {
+  ttl: 24 * 60 * 60 * 1000,
+});
+
+function getFamilyMemberIds(): string[] {
+  const raw = (import.meta.env.STEAM_FAMILY_IDS as string | undefined) ?? '';
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => /^\d{17}$/.test(s));
+}
+
+/**
+ * Fetch game libraries of Steam Family members (e.g. shared library owners).
+ * Requires each member's game details to be public. Returns an empty array
+ * when STEAM_FAMILY_IDS is unset.
+ */
+export async function getFamilyLibraryMembers(): Promise<FamilyMemberLibrary[]> {
+  if (!STEAM_API_KEY) {
+    return [];
+  }
+  const ids = getFamilyMemberIds();
+  if (ids.length === 0) {
+    return [];
+  }
+
+  const cached = await familyCache.get();
+  if (cached) {
+    return cached.members;
+  }
+
+  log.info(`Fetching Steam family libraries for ${ids.length} member(s)...`);
+  const members = await Promise.all(
+    ids.map(async (steamid): Promise<FamilyMemberLibrary | null> => {
+      const [summary, games] = await Promise.all([
+        getPlayerSummaryForSteamId(steamid),
+        getOwnedGamesForSteamId(steamid),
+      ]);
+      if (!games || games.length === 0) {
+        return null;
+      }
+      const totalMinutes = games.reduce((sum, game) => sum + game.playtime_forever, 0);
+      return {
+        steamid,
+        personaname: summary?.personaname || steamid,
+        avatar: summary?.avatarfull,
+        totalGames: games.length,
+        totalHoursPlayed: Math.round(totalMinutes / 60),
+        games,
+      };
+    })
+  );
+  const result = members.filter((m): m is FamilyMemberLibrary => m !== null);
+
+  await familyCache.set({ members: result, timestamp: Date.now() });
+  log.info(`Fetched Steam family libraries: ${result.map((m) => `${m.personaname} (${m.totalGames} games)`).join(', ')}`);
+  return result;
 }

@@ -237,6 +237,9 @@ jobs:
           # Steam 用户 ID
           echo "STEAM_ID=${{ secrets.STEAM_ID }}" >> .env
 
+          # Steam 家庭组成员（逗号分隔的 STEAM_ID，可选）
+          echo "STEAM_FAMILY_IDS=${{ secrets.STEAM_FAMILY_IDS || '76561199866101291' }}" >> .env
+
 
       # ======================================================
       # 第 5 步：安装 Puppeteer 使用的 Chrome
