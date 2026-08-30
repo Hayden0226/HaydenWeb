@@ -1,6 +1,6 @@
 // Platform metadata shared between server-side game aggregation and the
 // client-side game cards. Kept separate from unified-games.ts so the client
-// bundle never pulls in server-only modules (Steam/IGDB/sharp).
+// bundle never pulls in server-only modules (Steam/sharp).
 
 export type Platform = 'steam' | 'psn' | 'nintendo';
 

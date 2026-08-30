@@ -2,7 +2,6 @@
 import { getSteamStats, getSteamAchievements, getSteamLibraryUrl, type SteamGame, type SteamStats, type SteamAchievementInfo } from './steam';
 import { getPSNData, type PSNGame, type PSNStats } from './psn';
 import { getNintendoStats, type NintendoGame, type NintendoStats } from './nintendo';
-import { getIGDBCoverUrl, isExcludedGame, flushIGDBCache } from './igdb';
 import { getCoverGlowColor } from './cover-color';
 import { createLogger } from './logger';
 import type { Platform } from './platform';
@@ -57,7 +56,7 @@ export interface AllGamesResult {
 }
 
 /**
- * Combine games from all platforms into a unified list with IGDB cover art.
+ * Combine games from all platforms into a unified list with cover art.
  * Returns games + per-platform stats in a single call to avoid double-fetching.
  */
 export async function getAllGames(): Promise<AllGamesResult> {
@@ -71,18 +70,13 @@ export async function getAllGames(): Promise<AllGamesResult> {
 
   // Add Steam games
   if (steamStats) {
-    log.info('Fetching IGDB covers for Steam games...');
     const filteredSteamGames = (steamStats.ownedGames ?? steamStats.topPlayedGames)
-      .filter((game: SteamGame) => !isExcludedGame(game.name))
       .sort((a, b) => (b.rtime_last_played || 0) - (a.rtime_last_played || 0));
     const steamGames = await Promise.all(
       filteredSteamGames.map(async (game: SteamGame): Promise<UnifiedGame> => {
-        const [igdbCover, achievements] = await Promise.all([
-          getIGDBCoverUrl(game.name, 'steam'),
-          getSteamAchievements(game.appid),
-        ]);
+        const achievements = await getSteamAchievements(game.appid);
         const steamCover = getSteamLibraryUrl(game.appid);
-        const image = STEAM_COVER_OVERRIDES[game.appid] ?? (igdbCover || steamCover);
+        const image = STEAM_COVER_OVERRIDES[game.appid] ?? steamCover;
         const glowColor = image ? await getCoverGlowColor(image) : null;
         return {
           id: `steam-${game.appid}`,
@@ -107,21 +101,14 @@ export async function getAllGames(): Promise<AllGamesResult> {
   // Add PSN games
   const psnGames = psnData?.games;
   if (psnGames && psnGames.length > 0) {
-    log.info('Fetching IGDB covers for PlayStation games...');
-    const filteredPsnGames = psnGames.filter(
-      (game: PSNGame) => !isExcludedGame(game.name)
-    );
     const psnUnified = await Promise.all(
-      filteredPsnGames.map(async (game: PSNGame): Promise<UnifiedGame> => {
-        const igdbCover = await getIGDBCoverUrl(game.name, 'psn');
-        const glowColor = igdbCover ? await getCoverGlowColor(igdbCover) : null;
+      psnGames.map(async (game: PSNGame): Promise<UnifiedGame> => {
         return {
           id: `psn-${game.titleId}`,
           name: game.name,
           platform: 'psn',
-          image: igdbCover || '',
-          headerImage: igdbCover || '',
-          glowColor: glowColor ?? undefined,
+          image: '',
+          headerImage: '',
           psnData: {
             titleId: game.titleId,
             category: game.category,
@@ -144,21 +131,14 @@ export async function getAllGames(): Promise<AllGamesResult> {
 
   // Add Nintendo games
   if (nintendoStats && nintendoStats.recentGames.length > 0) {
-    log.info('Fetching IGDB covers for Nintendo games...');
-    const filteredNintendoGames = nintendoStats.recentGames.filter(
-      (game: NintendoGame) => !isExcludedGame(game.name)
-    );
     const nintendoUnified = await Promise.all(
-      filteredNintendoGames.map(async (game: NintendoGame): Promise<UnifiedGame> => {
-        const igdbCover = await getIGDBCoverUrl(game.name, 'nintendo');
-        const glowColor = igdbCover ? await getCoverGlowColor(igdbCover) : null;
+      nintendoStats.recentGames.map(async (game: NintendoGame): Promise<UnifiedGame> => {
         return {
           id: `nintendo-${game.titleId}`,
           name: game.name,
           platform: 'nintendo',
-          image: igdbCover || '',
-          headerImage: igdbCover || '',
-          glowColor: glowColor ?? undefined,
+          image: '',
+          headerImage: '',
           nintendoData: {
             titleId: game.titleId,
             playtimeSeconds: game.totalPlayTime,
@@ -170,10 +150,6 @@ export async function getAllGames(): Promise<AllGamesResult> {
     unifiedGames.push(...nintendoUnified);
   }
 
-  // Flush IGDB cache once after all covers are fetched
-  await flushIGDBCache();
-
-  log.info(`Total games with IGDB covers: ${unifiedGames.filter(g => g.image).length}/${unifiedGames.length}`);
   return {
     games: unifiedGames,
     steamStats,

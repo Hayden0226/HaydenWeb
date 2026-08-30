@@ -1,72 +1,372 @@
+# GitHub Actions 工作流的名称
+# 会显示在 GitHub → Actions 页面中
 name: Deploy to GitHub Pages
 
+
+# ============================================================
+# Workflow 触发条件
+# ============================================================
 on:
+
+  # 当代码 push 到指定分支时触发
   push:
+    # 只有 push 到 main 分支才会触发
     branches: [main]
+
+  # 定时触发
+  # GitHub Actions 的 cron 使用 UTC 时间
   schedule:
-    - cron: '0 0,3,6,9,12,15 * * *' # Beijing 08/11/14/17/20/23, ~every 3h during daytime
+    # 每天 UTC 00:00 / 03:00 / 06:00 / 09:00 / 12:00 / 15:00 执行
+    #
+    # 北京时间 = UTC + 8
+    # 因此对应北京时间：
+    # 08:00 / 11:00 / 14:00 / 17:00 / 20:00 / 23:00
+    #
+    # 即每天大约每 3 小时自动刷新一次网站
+    - cron: '0 0,3,6,9,12,15 * * *'
+
+  # 允许在 GitHub Actions 页面手动点击
+  # "Run workflow" 来执行这个 Workflow
   workflow_dispatch:
 
+
+# ============================================================
+# GitHub Actions 权限
+# ============================================================
 permissions:
+
+  # 允许 Workflow 读取仓库内容
+  # actions/checkout@v4 需要这个权限读取代码
   contents: read
+
+  # 允许 Workflow 写入 / 部署 GitHub Pages
   pages: write
+
+  # 允许 Workflow 使用 GitHub 的 OIDC 身份令牌
+  # GitHub Pages 部署通常需要这个权限
   id-token: write
 
+
+# ============================================================
+# 并发控制
+# ============================================================
 concurrency:
+
+  # 所有 Pages 部署任务归到同一个 "pages" 并发组
   group: pages
+
+  # 如果新的部署开始：
+  # 取消之前仍在运行的旧部署
+  #
+  # 例如：
+  # A 正在 Build
+  # ↓
+  # B 又触发了
+  # ↓
+  # A 被取消
+  # ↓
+  # 只继续执行 B
   cancel-in-progress: true
 
+
+# ============================================================
+# Jobs
+#
+# 一个 Workflow 可以包含多个 Job
+#
+# 这里有两个 Job：
+#
+# build
+#   ↓
+# deploy
+#
+# 先构建网站，再部署网站
+# ============================================================
 jobs:
+
+
+  # ==========================================================
+  # Job 1：Build
+  # ==========================================================
   build:
+
+    # 使用 GitHub 提供的 Ubuntu 最新版本 Runner
+    #
+    # Runner 可以理解为：
+    # GitHub 临时给你准备的一台 Linux 虚拟机
     runs-on: ubuntu-latest
+
+
+    # --------------------------------------------------------
+    # Build Job 的具体步骤
+    # --------------------------------------------------------
     steps:
+
+
+      # ======================================================
+      # 第 1 步：下载仓库代码
+      # ======================================================
       - name: Checkout
+
+        # 使用 GitHub 官方提供的 checkout Action
+        #
+        # 作用：
+        # 把当前 GitHub 仓库的代码下载到 Runner 中
+        #
+        # 可以简单理解成：
+        # GitHub Repository
+        #       ↓
+        # Ubuntu Runner
+        #       ↓
+        # 你的 Astro 项目
         uses: actions/checkout@v4
 
+
+      # ======================================================
+      # 第 2 步：安装 Node.js
+      # ======================================================
       - name: Setup Node
+
+        # 使用官方 Node.js 环境配置 Action
         uses: actions/setup-node@v4
+
         with:
+
+          # 指定 Node.js 版本为 22
+          #
+          # Astro、npm、Puppeteer 等工具都会在这个 Node.js
+          # 环境中运行
           node-version: 22
+
+          # 启用 npm 依赖缓存
+          #
+          # 后续 Workflow 再运行时可以复用缓存，
+          # 减少重新下载 npm 依赖的时间
           cache: npm
 
+
+      # ======================================================
+      # 第 3 步：安装项目依赖
+      # ======================================================
       - name: Install dependencies
+
+        # npm ci = Clean Install
+        #
+        # 根据 package-lock.json 精确安装项目依赖
+        #
+        # CI/CD 环境通常推荐 npm ci，
+        # 而不是 npm install
         run: npm ci
 
-      - name: Write .env from secrets
-        run: |
-          echo "LASTFM_API_KEY=${{ secrets.LASTFM_API_KEY }}" >> .env
-          echo "LASTFM_USERNAME=${{ secrets.LASTFM_USERNAME }}" >> .env
-          echo "GOODREADS_USER_ID=${{ secrets.GOODREADS_USER_ID || '203812556' }}" >> .env
-          echo "LETTERBOXD_USERNAME=${{ secrets.LETTERBOXD_USERNAME || 'Hayden0325' }}" >> .env
-          echo "TMDB_ACCESS_TOKEN=${{ secrets.TMDB_ACCESS_TOKEN }}" >> .env
-          echo "TMDB_ACCOUNT_OBJECT_ID=${{ secrets.TMDB_ACCOUNT_OBJECT_ID }}" >> .env
-          echo "TMDB_TV_LIST_ID=${{ secrets.TMDB_TV_LIST_ID }}" >> .env
-          echo "ANILIST_USERNAME=${{ secrets.ANILIST_USERNAME || 'Hayden0325' }}" >> .env
-          echo "STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}" >> .env
-          echo "STEAM_ID=${{ secrets.STEAM_ID }}" >> .env
-          echo "IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}" >> .env
-          echo "IGDB_ACCESS_TOKEN=${{ secrets.IGDB_ACCESS_TOKEN }}" >> .env
 
+      # ======================================================
+      # 第 4 步：从 GitHub Secrets 创建 .env
+      # ======================================================
+      - name: Write .env from secrets
+
+        # | 表示下面可以写多行 Shell 命令
+        run: |
+
+          # --------------------------------------------------
+          # Last.fm
+          # --------------------------------------------------
+
+          # 从 GitHub Secrets 中读取 Last.fm API Key
+          # 并写入 Runner 当前目录下的 .env 文件
+          echo "LASTFM_API_KEY=${{ secrets.LASTFM_API_KEY }}" >> .env
+
+          # Last.fm 用户名
+          echo "LASTFM_USERNAME=${{ secrets.LASTFM_USERNAME }}" >> .env
+
+
+          # --------------------------------------------------
+          # Goodreads
+          # --------------------------------------------------
+
+          # 如果 GitHub Secrets 中存在 GOODREADS_USER_ID，
+          # 就使用 Secret 中的值
+          #
+          # 如果没有配置 Secret，
+          # 就使用默认值 203812556
+          echo "GOODREADS_USER_ID=${{ secrets.GOODREADS_USER_ID || '203812556' }}" >> .env
+
+
+          # --------------------------------------------------
+          # Letterboxd
+          # --------------------------------------------------
+
+          # 如果配置了 LETTERBOXD_USERNAME Secret，
+          # 就使用 Secret
+          #
+          # 否则使用默认用户名 Hayden0325
+          echo "LETTERBOXD_USERNAME=${{ secrets.LETTERBOXD_USERNAME || 'Hayden0325' }}" >> .env
+
+
+          # --------------------------------------------------
+          # TMDB
+          # --------------------------------------------------
+
+          # TMDB Access Token
+          echo "TMDB_ACCESS_TOKEN=${{ secrets.TMDB_ACCESS_TOKEN }}" >> .env
+
+          # TMDB Account Object ID
+          echo "TMDB_ACCOUNT_OBJECT_ID=${{ secrets.TMDB_ACCOUNT_OBJECT_ID }}" >> .env
+
+          # TMDB TV List ID
+          echo "TMDB_TV_LIST_ID=${{ secrets.TMDB_TV_LIST_ID }}" >> .env
+
+
+          # --------------------------------------------------
+          # AniList
+          # --------------------------------------------------
+
+          # 如果配置了 ANILIST_USERNAME Secret，
+          # 使用 Secret
+          #
+          # 否则使用默认用户名 Hayden0325
+          echo "ANILIST_USERNAME=${{ secrets.ANILIST_USERNAME || 'Hayden0325' }}" >> .env
+
+
+          # --------------------------------------------------
+          # Steam
+          # --------------------------------------------------
+
+          # Steam Web API Key
+          echo "STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}" >> .env
+
+          # Steam 用户 ID
+          echo "STEAM_ID=${{ secrets.STEAM_ID }}" >> .env
+
+
+      # ======================================================
+      # 第 5 步：安装 Puppeteer 使用的 Chrome
+      # ======================================================
       - name: Install Puppeteer Chrome
+
+        # Puppeteer 本身是 Node.js 的浏览器自动化工具
+        #
+        # 这里让 Puppeteer 下载它需要的 Chrome 浏览器
+        #
+        # 如果你的 Astro 构建过程会使用 Puppeteer，
+        # 就需要提前准备好 Chrome
         run: npx puppeteer browsers install chrome
 
+
+      # ======================================================
+      # 第 6 步：构建 Astro 静态网站
+      # ======================================================
       - name: Build static site
+
+        # 执行 Astro 的生产环境构建
+        #
+        # 大致过程：
+        #
+        # src/
+        #   ↓
+        # Astro Build
+        #   ↓
+        # HTML / CSS / JS / 图片等静态资源
+        #   ↓
+        # dist/
+        #
+        # GitHub Pages 最终部署的就是这里生成的 dist/
         run: npx astro build
+
+        # 设置本步骤的环境变量
         env:
+
+          # 禁用 Astro Telemetry
+          #
+          # 也就是不发送 Astro 的相关匿名使用统计
           ASTRO_TELEMETRY_DISABLED: '1'
 
+
+      # ======================================================
+      # 第 7 步：上传构建结果
+      # ======================================================
       - name: Upload Pages artifact
+
+        # 使用 GitHub 官方的 Pages Artifact Action
+        #
+        # 注意：
+        # 这里还没有真正部署网站
+        #
+        # 它只是把 dist/ 打包并保存为 GitHub Pages Artifact
         uses: actions/upload-pages-artifact@v3
+
         with:
+
+          # 指定要上传的目录
+          #
+          # 也就是上一步：
+          # npx astro build
+          #
+          # 生成出来的 dist/
           path: dist
 
+
+  # ==========================================================
+  # Job 2：Deploy
+  # ==========================================================
   deploy:
+
+    # 必须等待 build Job 成功之后，
+    # 才允许执行 deploy
+    #
+    # 如果 build 失败：
+    #
+    # build ❌
+    #   ↓
+    # deploy 不执行
+    #
+    # 如果 build 成功：
+    #
+    # build ✅
+    #   ↓
+    # deploy 执行
     needs: build
+
+
+    # Deploy Job 同样运行在 Ubuntu Runner 上
     runs-on: ubuntu-latest
+
+
+    # ========================================================
+    # GitHub Environment
+    # ========================================================
     environment:
+
+      # 使用 GitHub Pages Environment
       name: github-pages
+
+      # 部署成功后，
+      # 使用 deployment Step 返回的 page_url
+      # 作为这个 Environment 的网站地址
       url: ${{ steps.deployment.outputs.page_url }}
+
+
+    # --------------------------------------------------------
+    # Deploy Job 的具体步骤
+    # --------------------------------------------------------
     steps:
+
+
+      # ======================================================
+      # 第 8 步：真正部署到 GitHub Pages
+      # ======================================================
       - name: Deploy to GitHub Pages
+
+        # 给这个 Step 设置一个 ID
+        #
+        # 因此上面的：
+        #
+        # steps.deployment.outputs.page_url
+        #
+        # 就是在引用这个 Step 的输出结果
         id: deployment
+
+        # 使用 GitHub 官方 Pages 部署 Action
+        #
+        # 它会把前面上传的 Pages Artifact
+        # 部署到 GitHub Pages
         uses: actions/deploy-pages@v4

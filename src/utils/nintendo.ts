@@ -1,6 +1,6 @@
 // Nintendo Switch data integration via Exophase scraping
 // Nintendo doesn't provide an official API, so we scrape Exophase for gaming stats
-// Note: Game cover art is fetched via IGDB API in unified-games.ts
+// Note: Cover art is not currently available for Nintendo games.
 
 import { createLogger } from './logger';
 
@@ -22,7 +22,7 @@ export interface NintendoStats {
 
 /**
  * Get Nintendo Switch gaming stats from Exophase
- * Note: Images are now fetched via IGDB in unified-games.ts
+ * Note: Cover art is not currently available for Nintendo games.
  */
 export async function getNintendoStats(): Promise<NintendoStats | null> {
   try {
@@ -47,5 +47,4 @@ export async function getNintendoStats(): Promise<NintendoStats | null> {
     return null;
   }
 }
-
 

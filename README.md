@@ -91,7 +91,6 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 | TV | TMDB API | ✅ 已启用 |
 | Anime | AniList 公开 API | ✅ 已启用 |
 | Games | Steam Web API | ✅ 已启用 |
-| Games 封面 | IGDB API（可选） | ⏳ 未配置（默认用 Steam 官方图） |
 
 ## 技术栈
 
@@ -126,7 +125,6 @@ npm run dev
 | `TMDB_TV_LIST_ID` | TMDB 自定义列表 ID（可选，展示没打分的剧） |
 | `ANILIST_USERNAME` | AniList 用户名（Anime 页） |
 | `STEAM_API_KEY` / `STEAM_ID` | Steam Web API（Games 页） |
-| `IGDB_CLIENT_ID` / `IGDB_ACCESS_TOKEN` | IGDB 封面（Games 页，可选） |
 
 ## 部署（GitHub Pages）
 
@@ -135,7 +133,7 @@ npm run dev
 1. 仓库 `Settings → Pages → Source` 选择 **GitHub Actions**
 2. 推送到 `main` 自动构建部署
 3. 工作流白天每 3 小时重新构建一次（北京 8、11、14、17、20、23 点），保持数据新鲜
-4. 环境变量由工作流写入 `.env`：`LASTFM_*` / `TMDB_*` / `STEAM_*` / `IGDB_*` 从 Actions Secrets 读取，`GOODREADS_USER_ID` / `LETTERBOXD_USERNAME` / `ANILIST_USERNAME` 内置默认值
+4. 环境变量由工作流写入 `.env`：`LASTFM_*` / `TMDB_*` / `STEAM_*` 从 Actions Secrets 读取，`GOODREADS_USER_ID` / `LETTERBOXD_USERNAME` / `ANILIST_USERNAME` 内置默认值
 
 > 自定义域名：`public/CNAME` 指向 `i.haydenweb.com`，DNS 已配置 CNAME 记录 `i` → `Hayden0226.github.io`。
 
