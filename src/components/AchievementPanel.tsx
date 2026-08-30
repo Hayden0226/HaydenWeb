@@ -25,13 +25,25 @@ type Tab = 'mine' | 'global';
 
 export default function AchievementPanel({ game, achievements, global, loading, error, onClose }: AchievementPanelProps) {
   const [tab, setTab] = useState<Tab>('mine');
+  // Tracks which hidden achievements have been revealed by clicking the card,
+  // mirroring Steam's library "click to reveal a hidden achievement".
+  const [revealed, setRevealed] = useState<Set<string>>(new Set());
   const unlocked = achievements.filter((a) => a.achieved).length;
   const total = achievements.length;
   const pct = total > 0 ? Math.round((unlocked / total) * 100) : 0;
   const globalAvg = global.length > 0 ? Math.round(global.reduce((sum, g) => sum + g.percent, 0) / global.length) : 0;
   const globalByApiname = new Map(global.map((g) => [g.apiname.toLowerCase(), g.percent]));
-  // Hidden achievements stay masked as "???" until unlocked, mirroring Steam.
+  // Hidden achievements stay masked as "???" until unlocked or clicked, mirroring Steam.
   const isSecret = (a: SteamAchievement, forceSecret = false) => !!a.hidden && (forceSecret || !a.achieved);
+
+  const toggleReveal = (apiname: string) => {
+    setRevealed((prev) => {
+      const next = new Set(prev);
+      if (next.has(apiname)) next.delete(apiname);
+      else next.add(apiname);
+      return next;
+    });
+  };
 
   return (
     <div
@@ -93,10 +105,15 @@ export default function AchievementPanel({ game, achievements, global, loading, 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {achievements.map((a) => {
             const secret = isSecret(a);
+            const reveal = revealed.has(a.apiname);
+            const masked = secret && !reveal;
+            const percent = globalByApiname.get(a.apiname.toLowerCase()) ?? 0;
+            const iconSrc = a.achieved ? a.icon : (a.iconGray || a.icon);
             return (
               <div
                 key={a.apiname}
                 className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(28,25,23,0.4)]"
+                onClick={() => { if (secret) toggleReveal(a.apiname); }}
               >
                 <div
                   className="absolute -inset-3 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
@@ -109,16 +126,16 @@ export default function AchievementPanel({ game, achievements, global, loading, 
                   className="relative flex gap-3 p-3 rounded-lg h-full"
                   style={{ backgroundColor: CARD_BG, opacity: a.achieved ? 1 : 0.6, minHeight: 88 }}
                 >
-                  {secret ? (
+                  {masked ? (
                     <div
                       className="w-10 h-10 rounded flex-shrink-0 grid place-items-center text-lg font-bold"
                       style={{ backgroundColor: TRACK_BG, color: TEXT_SECONDARY }}
                     >
                       ?
                     </div>
-                  ) : a.icon ? (
+                  ) : iconSrc ? (
                     <img
-                      src={a.achieved ? a.icon : (a.iconGray || a.icon)}
+                      src={iconSrc}
                       alt=""
                       className="w-10 h-10 rounded flex-shrink-0 object-contain"
                     />
@@ -126,11 +143,16 @@ export default function AchievementPanel({ game, achievements, global, loading, 
                     <div className="w-10 h-10 rounded flex-shrink-0" style={{ backgroundColor: TRACK_BG }} />
                   )}
                   <div className="min-w-0">
-                    <div className="font-semibold text-sm" style={{ color: a.achieved ? TEXT_PRIMARY : TEXT_SECONDARY }}>
-                      {secret ? '？？？' : a.title}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="font-semibold text-sm" style={{ color: a.achieved ? TEXT_PRIMARY : TEXT_SECONDARY }}>
+                        {masked ? '？？？' : a.title}
+                      </div>
+                      <div className="text-[10px] flex-shrink-0" style={{ color: TEXT_SECONDARY }}>
+                        全球 {percent.toFixed(1)}%
+                      </div>
                     </div>
                     <div className="text-xs mt-0.5 line-clamp-2 min-h-[2rem]" style={{ color: TEXT_SECONDARY }}>
-                      {secret ? '隐藏成就，解锁后才会显示详情。' : (a.description || '')}
+                      {masked ? '隐藏成就，点击查看详情。' : (a.description || '')}
                     </div>
                     <div className="text-xs mt-1 min-h-[1rem]" style={{ color: PROGRESS_FILL }}>
                       {a.achieved && a.unlockTime ? `✓ ${new Date(a.unlockTime * 1000).toLocaleDateString('zh-CN')}` : ''}
@@ -147,10 +169,14 @@ export default function AchievementPanel({ game, achievements, global, loading, 
           {achievements.map((a) => {
             const percent = globalByApiname.get(a.apiname.toLowerCase()) ?? 0;
             const secret = isSecret(a, true);
+            const reveal = revealed.has(a.apiname);
+            const masked = secret && !reveal;
+            const iconSrc = a.achieved ? a.icon : (a.iconGray || a.icon);
             return (
               <div
                 key={a.apiname}
                 className="group relative transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1.5 cursor-pointer hover:shadow-[0_12px_32px_rgba(28,25,23,0.4)]"
+                onClick={() => { if (secret) toggleReveal(a.apiname); }}
               >
                 <div
                   className="absolute -inset-3 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
@@ -163,16 +189,16 @@ export default function AchievementPanel({ game, achievements, global, loading, 
                   className="relative flex gap-3 p-3 rounded-lg h-full"
                   style={{ backgroundColor: CARD_BG, minHeight: 88 }}
                 >
-                  {secret ? (
+                  {masked ? (
                     <div
                       className="w-10 h-10 rounded flex-shrink-0 grid place-items-center text-lg font-bold"
                       style={{ backgroundColor: TRACK_BG, color: TEXT_SECONDARY }}
                     >
                       ?
                     </div>
-                  ) : a.icon ? (
+                  ) : iconSrc ? (
                     <img
-                      src={a.achieved ? a.icon : (a.iconGray || a.icon)}
+                      src={iconSrc}
                       alt=""
                       className="w-10 h-10 rounded flex-shrink-0 object-contain"
                     />
@@ -182,7 +208,7 @@ export default function AchievementPanel({ game, achievements, global, loading, 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <div className="font-semibold text-sm" style={{ color: TEXT_PRIMARY }}>
-                        {secret ? '？？？' : a.title}
+                        {masked ? '？？？' : a.title}
                       </div>
                       <div className="text-xs flex-shrink-0" style={{ color: TEXT_SECONDARY }}>
                         {percent.toFixed(1)}%
