@@ -33,6 +33,7 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 <summary><strong>2026-08-31</strong> · Toodles 上传音视频预览播放</summary>
 
 - **音视频预览**：Toodles 上传音频 / 视频后，文件区直接出现可播放的控件（播放/暂停、进度条、时间、音量），转换前可先试听 / 试看。
+- **GIF 帧率上限**：MP4 → GIF 的帧率上限从 30 提到 100，可输出 60 / 100fps 动图。
 
 </details>
 

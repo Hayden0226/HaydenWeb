@@ -233,7 +233,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'gif',
     engine: 'ffmpeg',
     options: [
-      { key: 'fps', label: '帧率', type: 'number', min: 1, max: 30, step: 1, default: 10 },
+      { key: 'fps', label: '帧率', type: 'number', min: 1, max: 100, step: 1, default: 10 },
       { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 1920, step: 16, default: 480 },
     ],
     buildArgs: (input, output, opts) => [
