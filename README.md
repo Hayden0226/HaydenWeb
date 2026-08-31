@@ -24,12 +24,19 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 ## 亮点
 
 - **Games 三视图 + 成就系统**：Steam 库按「总览（全部）/ 收藏夹 / 最近」分页展示；点击任意卡片展开成就面板，支持「我的成就 / 全球成就」切换与隐藏成就点击揭晓。收藏夹数据从本机 Steam 云配置导出（`src/data/steam-favorites.ts`），个别缺封面的游戏通过 `src/data/steam-cover-overrides.ts` 兜底。家庭组共享的游戏并入总览列表、右上角标记「来自您的steam家庭库」，不混入个人时长与成就数据。
-- **Toodles 纯前端转换**：音频 / 视频 / 图片共 23 种转换，由 FFmpeg.wasm 驱动，全程在浏览器本地完成、不上传文件，转换结果保留原文件名。
+- **Toodles 纯前端转换**：音频 / 视频 / 图片共 23 种转换，由 FFmpeg.wasm 驱动，全程在浏览器本地完成、不上传文件，转换结果保留原文件名；上传音频 / 视频后可直接预览试听。
 - **定时自动更新**：GitHub Actions 白天每 3 小时重建一次（北京 8、11、14、17、20、23 点），音乐、书影音、游戏等数据自动保持新鲜。
 
 ## 最近更新
 
 <details open>
+<summary><strong>2026-08-31</strong> · Toodles 上传音视频预览播放</summary>
+
+- **音视频预览**：Toodles 上传音频 / 视频后，文件区直接出现可播放的控件（播放/暂停、进度条、时间、音量），转换前可先试听 / 试看。
+
+</details>
+
+<details>
 <summary><strong>2026-08-30</strong> · 头像本地化与 README 重写</summary>
 
 - **头像本地化**：Home 页头像、SEO 与 OG 分享图不再依赖 GitHub 头像外链，改用仓库内置的 `public/images/avatar.png`。

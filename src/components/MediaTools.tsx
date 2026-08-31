@@ -27,6 +27,20 @@ function download(blob: Blob, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
+type PreviewKind = 'image' | 'audio' | 'video' | 'other';
+
+function classifyPreview(file: File): PreviewKind {
+  const mime = (file.type || '').toLowerCase();
+  if (mime.startsWith('image/')) return 'image';
+  if (mime.startsWith('audio/')) return 'audio';
+  if (mime.startsWith('video/')) return 'video';
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac', 'opus', 'wma'].includes(ext)) return 'audio';
+  if (['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'mpg', 'mpeg', 'wmv'].includes(ext)) return 'video';
+  if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg', 'avif'].includes(ext)) return 'image';
+  return 'other';
+}
+
 function OptionControl({
   option,
   value,
@@ -117,7 +131,7 @@ export default function MediaTools() {
   }
 
   useEffect(() => {
-    if (!file || !file.type.startsWith('image/')) {
+    if (!file) {
       setPreviewUrl(null);
       return;
     }
@@ -154,6 +168,7 @@ export default function MediaTools() {
 
   const percent = Math.min(100, Math.max(0, Math.round(progress * 100)));
   const isBusy = status === 'loading' || status === 'processing';
+  const previewKind = file ? classifyPreview(file) : 'other';
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -268,7 +283,25 @@ export default function MediaTools() {
             {file ? (
               <div className="flex flex-col items-center gap-1" style={{ color: 'var(--text-primary)' }}>
                 {previewUrl ? (
-                  <img src={previewUrl} alt="预览" className="w-28 h-28 object-contain rounded-lg mb-2" />
+                  previewKind === 'video' ? (
+                    <video
+                      controls
+                      src={previewUrl}
+                      className="w-full max-h-72 rounded-lg mb-2"
+                      style={{ colorScheme: 'light' }}
+                    />
+                  ) : previewKind === 'audio' ? (
+                    <audio
+                      controls
+                      src={previewUrl}
+                      className="w-full mb-2"
+                      style={{ colorScheme: 'light' }}
+                    />
+                  ) : previewKind === 'image' ? (
+                    <img src={previewUrl} alt="预览" className="w-28 h-28 object-contain rounded-lg mb-2" />
+                  ) : (
+                    <div className="text-3xl mb-1">📄</div>
+                  )
                 ) : (
                   <div className="text-3xl mb-1">📄</div>
                 )}
