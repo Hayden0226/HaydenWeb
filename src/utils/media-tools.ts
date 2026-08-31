@@ -144,7 +144,7 @@ const BIT_DEPTH: ToolOption = {
     { value: '24', label: '24-bit' },
     { value: '32', label: '32-bit' },
   ],
-  default: 16,
+  default: 32,
   hint: '位深越高单点精度越高：16-bit 为 CD 标准，24/32-bit 动态范围更宽、文件更大。',
 };
 
@@ -158,7 +158,7 @@ const SAMPLE_RATE: ToolOption = {
     { value: '96000', label: '96000 Hz' },
     { value: '192000', label: '192000 Hz' },
   ],
-  default: 44100,
+  default: 192000,
   hint: '采样率越高记录越细腻：44100 Hz 为 CD 标准，96000 / 192000 Hz 适合高解析度音频。',
 };
 
