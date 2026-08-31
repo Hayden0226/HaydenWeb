@@ -100,7 +100,7 @@ const QUALITY = [
   { value: '128', label: '低 (128 kbps)' },
 ];
 
-const JPEG_QUALITY: ToolOption = { key: 'quality', label: 'JPEG 质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 0.92 };
+const JPEG_QUALITY: ToolOption = { key: 'quality', label: 'JPEG 质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 };
 
 const OUTPUT_FORMAT: ToolOption = {
   key: 'format',
@@ -135,7 +135,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'mp3',
     engine: 'ffmpeg',
     options: [
-      { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 192 },
+      { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320 },
     ],
     buildArgs: (input, output, opts) => ['-i', input, '-vn', '-acodec', 'libmp3lame', '-b:a', `${opts.quality ?? 192}k`, output],
   },
@@ -174,7 +174,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
         { value: 'ogg', label: 'OGG' },
         { value: 'flac', label: 'FLAC' },
       ], default: 0 },
-      { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 192 },
+      { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320 },
     ],
     buildArgs: (input, output, opts) => {
       const fmt = String(opts.format ?? 'mp3');
@@ -219,7 +219,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: 'audio/*',
     outputExt: 'mp3',
     engine: 'ffmpeg',
-    options: [OUTPUT_FORMAT, { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 192 }],
+    options: [OUTPUT_FORMAT, { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320 }],
     buildArgs: (input, output, opts) => {
       const fmt = String(opts.format ?? 'mp3');
       const codec = fmt === 'wav' ? 'pcm_s16le' : fmt === 'flac' ? 'flac' : fmt === 'ogg' ? 'libvorbis' : 'libmp3lame';
@@ -241,8 +241,8 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'gif',
     engine: 'ffmpeg',
     options: [
-      { key: 'fps', label: '帧率', type: 'number', min: 1, max: 50, step: 1, default: 10 },
-      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 8192, step: 16, default: 480 },
+      { key: 'fps', label: '帧率', type: 'number', min: 1, max: 50, step: 1, default: 50 },
+      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 8192, step: 16, default: 8192 },
     ],
     buildArgs: (input, output, opts) => [
       '-i', input,
@@ -290,7 +290,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'zip',
     engine: 'ffmpeg',
     options: [
-      { key: 'frames', label: '最多帧数', type: 'number', min: 1, max: 500, step: 1, default: 12 },
+      { key: 'frames', label: '最多帧数', type: 'number', min: 1, max: 500, step: 1, default: 500 },
       { key: 'format', label: '图片格式', type: 'select', choices: [
         { value: 'png', label: 'PNG' },
         { value: 'jpg', label: 'JPG' },
@@ -306,7 +306,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'mp4',
     engine: 'ffmpeg',
     options: [
-      { key: 'crf', label: '质量 CRF (越小越清晰)', type: 'number', min: 18, max: 51, step: 1, default: 28 },
+      { key: 'crf', label: '质量 CRF (越小越清晰)', type: 'number', min: 18, max: 51, step: 1, default: 18 },
     ],
     buildArgs: (input, output, opts) => [
       '-i', input,
@@ -324,7 +324,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'mp4',
     engine: 'ffmpeg',
     options: [
-      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 8192, step: 16, default: 1280 },
+      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 8192, step: 16, default: 8192 },
     ],
     buildArgs: (input, output, opts) => [
       '-i', input,
@@ -365,7 +365,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: 'image/png',
     outputExt: 'webp',
     engine: 'image',
-    options: [{ key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 0.85 }],
+    options: [{ key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 }],
     runImage: (blob, opts) => reencode(blob, 'image/webp', num(opts.quality, 0.85)).then((b) => ({ blob: b, outputExt: 'webp' })),
   },
   {
@@ -376,7 +376,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: 'image/jpeg,image/jpg',
     outputExt: 'webp',
     engine: 'image',
-    options: [{ key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 0.85 }],
+    options: [{ key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 }],
     runImage: (blob, opts) => reencode(blob, 'image/webp', num(opts.quality, 0.85)).then((b) => ({ blob: b, outputExt: 'webp' })),
   },
   {
@@ -413,7 +413,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
         { value: 'jpeg', label: 'JPEG' },
         { value: 'png', label: 'PNG' },
       ], default: 0 },
-      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 0.75 },
+      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 },
     ],
     runImage: (blob, opts) => {
       const fmt = String(opts.format ?? 'webp');
@@ -430,12 +430,12 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'webp',
     engine: 'image',
     options: [
-      { key: 'width', label: '目标宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1280 },
+      { key: 'width', label: '目标宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 8192 },
       { key: 'format', label: '输出格式', type: 'select', choices: [
         { value: 'jpeg', label: 'JPEG' },
         { value: 'webp', label: 'WebP' },
       ], default: 0 },
-      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 0.88 },
+      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 },
     ],
     runImage: async (blob, opts) => {
       const width = num(opts.width, 1280);
@@ -462,14 +462,14 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'jpeg',
     engine: 'image',
     options: [
-      { key: 'width', label: '输出宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1080 },
-      { key: 'height', label: '输出高度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1080 },
+      { key: 'width', label: '输出宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 8192 },
+      { key: 'height', label: '输出高度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 8192 },
       { key: 'format', label: '输出格式', type: 'select', choices: [
         { value: 'jpeg', label: 'JPEG' },
         { value: 'webp', label: 'WebP' },
         { value: 'png', label: 'PNG' },
       ], default: 0 },
-      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 0.9 },
+      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 },
     ],
     runImage: async (blob, opts) => {
       const outW = num(opts.width, 1080);
@@ -520,7 +520,7 @@ async function convertVideoToImages(
   const extMatch = /\.([a-z0-9]+)$/i.exec(file.name);
   const inputName = `input.${extMatch ? extMatch[1].toLowerCase() : 'bin'}`;
   const fmt = String(opts.format ?? 'png');
-  const frames = Math.max(1, Math.min(100, num(opts.frames, 12)));
+  const frames = Math.max(1, Math.min(500, num(opts.frames, 500)));
   const pattern = `frame_%03d.${fmt}`;
 
   await ffmpeg.writeFile(inputName, new Uint8Array(await file.arrayBuffer()));
