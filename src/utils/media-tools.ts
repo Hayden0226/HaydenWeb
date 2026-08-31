@@ -174,11 +174,16 @@ export const MEDIA_TOOLS: MediaTool[] = [
         { value: 'ogg', label: 'OGG' },
         { value: 'flac', label: 'FLAC' },
       ], default: 0 },
+      { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 192 },
     ],
     buildArgs: (input, output, opts) => {
       const fmt = String(opts.format ?? 'mp3');
       const codec = fmt === 'wav' ? 'pcm_s16le' : fmt === 'flac' ? 'flac' : fmt === 'ogg' ? 'libvorbis' : 'libmp3lame';
-      return ['-i', input, '-vn', '-acodec', codec, output];
+      const extra =
+        fmt === 'wav' || fmt === 'flac' ? []
+        : fmt === 'ogg' ? ['-q:a', '5']
+        : ['-b:a', `${opts.quality ?? 192}k`];
+      return ['-i', input, '-vn', '-acodec', codec, ...extra, output];
     },
   },
   {
@@ -199,7 +204,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     ],
     buildArgs: (input, output, opts) => {
       const start = num(opts.start, 0);
-      const end = num(opts.end, 30);
+      const end = Math.max(num(opts.end, 30), start + 0.1);
       const fmt = String(opts.format ?? 'mp3');
       const codec = fmt === 'wav' ? 'pcm_s16le' : 'libmp3lame';
       const extra = fmt === 'wav' ? [] : ['-q:a', '2'];
@@ -237,11 +242,11 @@ export const MEDIA_TOOLS: MediaTool[] = [
     engine: 'ffmpeg',
     options: [
       { key: 'fps', label: '帧率', type: 'number', min: 1, max: 100, step: 1, default: 10 },
-      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 1920, step: 16, default: 480 },
+      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 8192, step: 16, default: 480 },
     ],
     buildArgs: (input, output, opts) => [
       '-i', input,
-      '-vf', `fps=${num(opts.fps, 10)},scale=${num(opts.width, 480)}:-1:flags=lanczos`,
+      '-vf', `fps=${num(opts.fps, 10)},scale=${num(opts.width, 480)}:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=full[p];[b][p]paletteuse=dither=sierra2_4a`,
       '-loop', '0',
       output,
     ],
@@ -285,7 +290,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'zip',
     engine: 'ffmpeg',
     options: [
-      { key: 'frames', label: '最多帧数', type: 'number', min: 1, max: 100, step: 1, default: 12 },
+      { key: 'frames', label: '最多帧数', type: 'number', min: 1, max: 500, step: 1, default: 12 },
       { key: 'format', label: '图片格式', type: 'select', choices: [
         { value: 'png', label: 'PNG' },
         { value: 'jpg', label: 'JPG' },
@@ -301,7 +306,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'mp4',
     engine: 'ffmpeg',
     options: [
-      { key: 'crf', label: '质量 CRF (越小越清晰)', type: 'number', min: 18, max: 42, step: 1, default: 28 },
+      { key: 'crf', label: '质量 CRF (越小越清晰)', type: 'number', min: 18, max: 51, step: 1, default: 28 },
     ],
     buildArgs: (input, output, opts) => [
       '-i', input,
@@ -319,7 +324,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'mp4',
     engine: 'ffmpeg',
     options: [
-      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 3840, step: 16, default: 1280 },
+      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 8192, step: 16, default: 1280 },
     ],
     buildArgs: (input, output, opts) => [
       '-i', input,

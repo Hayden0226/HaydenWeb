@@ -36,6 +36,7 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 - **GIF 帧率上限**：MP4 → GIF 的帧率上限从 30 提到 100，可输出 60 / 100fps 动图。
 - **MP3 质量修正**：修复 MP3 输出质量档位（原「高 10 / 低 0」与 libmp3lame 的 VBR 0-9 等级相反），改为直观比特率：高 320kbps / 中 192kbps / 低 128kbps。
 - **Toodles 参数修正**：修复「输出格式」下拉默认值为 0 导致图片下载扩展名变成 `.0` 的问题；`GIF → MP4` 显式走 H.264 编码，输出更稳定。
+- **Toodles 转换增强**：`MP4 → GIF` 加入 `palettegen/paletteuse` 调色板改善色带；`Video → Audio` 支持 MP3 比特率；`Audio Cutter` 钳制起终点；并提升各参数上限（GIF 宽度 8192、抽帧 500、CRF 51、视频宽度 8192）。
 
 </details>
 
