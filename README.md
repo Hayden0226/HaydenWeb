@@ -37,7 +37,8 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 - **MP3 质量修正**：修复 MP3 输出质量档位（原「高 10 / 低 0」与 libmp3lame 的 VBR 0-9 等级相反），改为直观比特率：高 320kbps / 中 192kbps / 低 128kbps。
 - **Toodles 参数修正**：修复「输出格式」下拉默认值为 0 导致图片下载扩展名变成 `.0` 的问题；`GIF → MP4` 显式走 H.264 编码，输出更稳定。
 - **Toodles 转换增强**：`MP4 → GIF` 加入 `palettegen/paletteuse` 调色板改善色带；`Video → Audio` 支持 MP3 比特率；`Audio Cutter` 钳制起终点；并提升各参数上限（GIF 宽度 8192、抽帧 500、CRF 51、视频宽度 8192）。
-- **Toodles 默认参数拉满**：各工具默认值全部提到上限（MP3 320kbps、质量 100%、CRF 18、GIF 50fps/8192px、抽帧 500、尺寸 8192），并修复抽帧运行的隐藏 `Math.min(100)` 硬钳制，真正生效到 500。
+- **Toodles 默认参数拉满**：各工具默认值全部提到上限（MP3 320kbps、质量 100%、CRF 18、GIF 50fps、抽帧 500、尺寸 8192），并修复抽帧运行的隐藏 `Math.min(100)` 硬钳制，真正生效到 500。
+- **Toodles 微调**：`MP4 → GIF` 的宽度上限与默认值从 8192 降到 4K（3840px），避免默认动图过大。
 
 </details>
 
