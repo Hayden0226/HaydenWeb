@@ -23,9 +23,13 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 
 ## 亮点
 
-- **Games 三视图 + 成就系统**：Steam 库按「总览（全部）/ 收藏夹 / 最近」分页展示；点击任意卡片展开成就面板，支持「我的成就 / 全球成就」切换与隐藏成就点击揭晓。收藏夹数据从本机 Steam 云配置导出（`src/data/steam-favorites.ts`），个别缺封面的游戏通过 `src/data/steam-cover-overrides.ts` 兜底。家庭组共享的游戏并入总览列表、右上角标记「来自您的steam家庭库」，不混入个人时长与成就数据。
-- **Toodles 纯前端转换**：音频 / 视频 / 图片共 23 种转换，由 FFmpeg.wasm 驱动，全程在浏览器本地完成、不上传文件，转换结果保留原文件名；上传音频 / 视频后可直接预览试听。
-- **定时自动更新**：GitHub Actions 白天每 3 小时重建一次（北京 8、11、14、17、20、23 点），音乐、书影音、游戏等数据自动保持新鲜。
+- **多数据源个人媒体库**：音乐（Last.fm）、书籍（Goodreads）、电影（Letterboxd）、剧集（TMDB）、番剧（AniList）、游戏（Steam）六大来源汇聚在同一站点，每页都提供「总览 / 收藏 / 待读待看（或最近）」等视图，构建时自动抓取，阅读 / 观影 / 游戏记录持续保持新鲜。
+- **Games 三视图 + 成就系统**：Steam 库按「总览（全部）/ 收藏夹 / 最近」分页展示；点击任意卡片在页面下方展开成就面板，支持「我的成就 / 全球成就」切换与隐藏成就点击揭晓，并显示全球完成百分比。收藏夹数据从本机 Steam 云配置导出（`src/data/steam-favorites.ts`），个别缺封面的游戏通过 `src/data/steam-cover-overrides.ts` 兜底。家庭组共享的游戏并入总览列表并在右上角标记「来自您的steam家庭库」，不混入个人时长与成就数据。
+- **Toodles 纯前端转换**：音频 / 视频 / 图片共 23 种转换，由 FFmpeg.wasm 与原生 Canvas 驱动，全程在浏览器本地完成、文件不上传；上传后可直接试听 / 试看，转换结果在页内预览并保留原文件名。详见下文 [Toodles](#toodles) 章节。
+- **Projects 卡片化展示**：个人项目以 Astro 内容集合维护（`src/content/projects/`），支持 featured 置顶、技术栈标签、GitHub / Demo / 官网链接与时间线排序，形成稳定的作品集。
+- **Photography 独立摄影站**：主页与导航的 Photography 直接跳转到独立的视觉站 visuals.haydenweb.com，作品与主站内容分流。
+- **定时自动更新**：GitHub Actions 白天每 3 小时重建一次（北京 8、11、14、17、20、23 点），音乐、书影音、游戏等数据自动保持新鲜，无需手动维护。
+- **静态高性能**：全站为 Astro 静态站点，部署到 GitHub Pages，支持浅色 / 深色主题、动画过渡与移动端适配；Toodles 的 FFmpeg core 同源托管，离线也能加载。
 
 ## Toodles
 
