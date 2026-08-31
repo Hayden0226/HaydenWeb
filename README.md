@@ -53,9 +53,9 @@ Toodles（导航「妙妙工具」，访问路径 `/tools`）是站点内置的�
 | WAV → MP3 | 压缩为 MP3 | 质量（320 / 192 / 128 kbps） |
 | MP3 → OGG | Vorbis 编码 | 无 |
 | WAV → FLAC | 无损压缩 | 无 |
-| Video → Audio | 提取视频音轨 | 输出格式（MP3 / WAV / OGG / FLAC）、质量 |
+| Video → Audio | 提取视频音轨 | 输出格式（MP3 / WAV / OGG / FLAC）、质量（仅 MP3） |
 | Audio Cutter | 截取片段 | 开始 / 结束秒数、输出格式（MP3 / WAV） |
-| Audio Converter | 任意音频互转 | 输出格式（MP3 / WAV / OGG / FLAC）、质量 |
+| Audio Converter | 任意音频互转 | 输出格式（MP3 / WAV / OGG / FLAC）、质量（仅 MP3） |
 
 #### 🎬 视频（7 种）
 

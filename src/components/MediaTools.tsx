@@ -361,7 +361,14 @@ export default function MediaTools() {
           {/* Options */}
           {selected.options && selected.options.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-              {selected.options.map((option) => (
+              {selected.options
+                .filter((option) => {
+                  if (option.key !== 'quality') return true;
+                  if (selected.category !== 'audio') return true;
+                  const fmt = String(options.format ?? 'mp3');
+                  return fmt === 'mp3';
+                })
+                .map((option) => (
                 <label key={option.key} className="block">
                   <span className="text-sm block mb-1" style={{ color: 'var(--text-secondary)' }}>{option.label}</span>
                   <OptionControl
@@ -370,7 +377,7 @@ export default function MediaTools() {
                     onChange={(next) => setOptions((prev) => ({ ...prev, [option.key]: next }))}
                   />
                 </label>
-              ))}
+                ))}
             </div>
           )}
 
