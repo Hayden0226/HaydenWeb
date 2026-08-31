@@ -33,7 +33,7 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 <summary><strong>2026-08-31</strong> · Toodles 上传音视频预览播放</summary>
 
 - **音视频预览**：Toodles 上传音频 / 视频后，文件区直接出现可播放的控件（播放/暂停、进度条、时间、音量），转换前可先试听 / 试看。
-- **GIF 帧率上限**：MP4 → GIF 的帧率上限从 30 提到 100，可输出 60 / 100fps 动图。
+- **GIF 帧率上限**：MP4 → GIF 的帧率上限调到 50fps。浏览器只认 ≥20ms（≤50fps）的帧延迟，60/100fps 会被兜底重置成约 10fps，反而更卡、文件更大；实际建议用 10–30fps。
 - **MP3 质量修正**：修复 MP3 输出质量档位（原「高 10 / 低 0」与 libmp3lame 的 VBR 0-9 等级相反），改为直观比特率：高 320kbps / 中 192kbps / 低 128kbps。
 - **Toodles 参数修正**：修复「输出格式」下拉默认值为 0 导致图片下载扩展名变成 `.0` 的问题；`GIF → MP4` 显式走 H.264 编码，输出更稳定。
 - **Toodles 转换增强**：`MP4 → GIF` 加入 `palettegen/paletteuse` 调色板改善色带；`Video → Audio` 支持 MP3 比特率；`Audio Cutter` 钳制起终点；并提升各参数上限（GIF 宽度 8192、抽帧 500、CRF 51、视频宽度 8192）。
