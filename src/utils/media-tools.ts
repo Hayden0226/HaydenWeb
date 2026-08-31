@@ -241,8 +241,8 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'gif',
     engine: 'ffmpeg',
     options: [
-      { key: 'fps', label: '帧率', type: 'number', min: 1, max: 50, step: 1, default: 50 },
-      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 3840, step: 16, default: 3840 },
+      { key: 'fps', label: '帧率', type: 'number', min: 1, max: 50, step: 1, default: 15 },
+      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 3840, step: 16, default: 720 },
     ],
     buildArgs: (input, output, opts) => [
       '-i', input,
@@ -324,7 +324,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'mp4',
     engine: 'ffmpeg',
     options: [
-      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 8192, step: 16, default: 8192 },
+      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 8192, step: 16, default: 1280 },
     ],
     buildArgs: (input, output, opts) => [
       '-i', input,
@@ -430,7 +430,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'webp',
     engine: 'image',
     options: [
-      { key: 'width', label: '目标宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 8192 },
+      { key: 'width', label: '目标宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1280 },
       { key: 'format', label: '输出格式', type: 'select', choices: [
         { value: 'jpeg', label: 'JPEG' },
         { value: 'webp', label: 'WebP' },
@@ -462,8 +462,8 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'jpeg',
     engine: 'image',
     options: [
-      { key: 'width', label: '输出宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 8192 },
-      { key: 'height', label: '输出高度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 8192 },
+      { key: 'width', label: '输出宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1080 },
+      { key: 'height', label: '输出高度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1080 },
       { key: 'format', label: '输出格式', type: 'select', choices: [
         { value: 'jpeg', label: 'JPEG' },
         { value: 'webp', label: 'WebP' },
@@ -530,7 +530,11 @@ async function convertVideoToImages(
   };
   ffmpeg.on('progress', progressHandler);
   try {
-    await ffmpeg.exec(['-i', inputName, '-vf', 'fps=1', '-frames:v', String(frames), pattern]);
+    const exitCode = await ffmpeg.exec(['-i', inputName, '-vf', 'fps=1', '-frames:v', String(frames), pattern]);
+    if (exitCode !== 0) {
+      await ffmpeg.deleteFile(inputName).catch(() => undefined);
+      throw new Error(`FFmpeg 抽帧失败（退出码 ${exitCode}）`);
+    }
   } finally {
     ffmpeg.off('progress', progressHandler);
   }

@@ -107,28 +107,44 @@ export async function runFFmpeg(options: RunFFmpegOptions): Promise<Blob> {
   const progressHandler = (event: { progress: number; time: number }) => {
     options.onProgress?.({ ratio: event.progress, time: event.time });
   };
+  const errorLines: string[] = [];
   const logHandler = (event: { message: string }) => {
     if (event && typeof event.message === 'string') {
-      options.onLog?.(event.message);
+      const msg = event.message;
+      options.onLog?.(msg);
+      if (/error|failed|aborted|out of memory/i.test(msg)) {
+        errorLines.push(msg);
+        if (errorLines.length > 8) errorLines.shift();
+      }
     }
   };
 
   ffmpeg.on('progress', progressHandler);
   ffmpeg.on('log', logHandler);
 
+  let exitCode = 0;
   try {
-    await ffmpeg.exec(rawArgs);
+    exitCode = await ffmpeg.exec(rawArgs);
   } finally {
     ffmpeg.off('progress', progressHandler);
     ffmpeg.off('log', logHandler);
   }
 
-  const output = await ffmpeg.readFile(options.outputName);
   await ffmpeg.deleteFile(inputName).catch(() => undefined);
+
+  if (exitCode !== 0) {
+    await ffmpeg.deleteFile(options.outputName).catch(() => undefined);
+    const detail = errorLines.length
+      ? errorLines.slice(-3).join(' ')
+      : `FFmpeg 退出码 ${exitCode}`;
+    throw new Error(`转换处理失败：${detail}`);
+  }
+
+  const output = await ffmpeg.readFile(options.outputName);
   await ffmpeg.deleteFile(options.outputName).catch(() => undefined);
 
   const bytes = typeof output === 'string'
     ? new TextEncoder().encode(output)
-    : output;
+    : new Uint8Array(output);
   return new Blob([bytes]);
 }
