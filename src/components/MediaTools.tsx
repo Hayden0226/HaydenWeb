@@ -363,10 +363,11 @@ export default function MediaTools() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
               {selected.options
                 .filter((option) => {
-                  if (option.key !== 'quality') return true;
                   if (selected.category !== 'audio') return true;
-                  const fmt = String(options.format ?? 'mp3');
-                  return fmt === 'mp3';
+                  const fmt = String(options.format ?? '');
+                  if (option.key === 'quality') return fmt === 'mp3' || !options.format;
+                  if (option.key === 'bitDepth' || option.key === 'sampleRate') return fmt === 'wav' || fmt === 'flac' || !options.format;
+                  return true;
                 })
                 .map((option) => (
                 <label key={option.key} className="block">

@@ -92,6 +92,16 @@ function baseNameOf(fileName: string): string {
   return base || 'converted';
 }
 
+function losslessArgs(fmt: string, bitDepth: string, sampleRate: string): string[] {
+  if (fmt === 'flac') {
+    const sampleFmt = bitDepth === '16' ? 's16' : 's32';
+    const extra = bitDepth === '16' ? [] : ['-bits_per_raw_sample', bitDepth];
+    return ['-acodec', 'flac', '-sample_fmt', sampleFmt, ...extra, '-ar', sampleRate];
+  }
+  const codec = bitDepth === '24' ? 'pcm_s24le' : bitDepth === '32' ? 'pcm_s32le' : 'pcm_s16le';
+  return ['-acodec', codec, '-ar', sampleRate];
+}
+
 // ---- Tool definitions --------------------------------------------------------
 
 const QUALITY = [
@@ -114,6 +124,31 @@ const OUTPUT_FORMAT: ToolOption = {
   ],
 };
 
+const BIT_DEPTH: ToolOption = {
+  key: 'bitDepth',
+  label: '位深',
+  type: 'select',
+  choices: [
+    { value: '16', label: '16-bit' },
+    { value: '24', label: '24-bit' },
+    { value: '32', label: '32-bit' },
+  ],
+  default: 16,
+};
+
+const SAMPLE_RATE: ToolOption = {
+  key: 'sampleRate',
+  label: '采样率',
+  type: 'select',
+  choices: [
+    { value: '44100', label: '44100 Hz' },
+    { value: '48000', label: '48000 Hz' },
+    { value: '96000', label: '96000 Hz' },
+    { value: '192000', label: '192000 Hz' },
+  ],
+  default: 44100,
+};
+
 export const MEDIA_TOOLS: MediaTool[] = [
   // ---- Audio ----
   {
@@ -124,7 +159,10 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: '.mp3,audio/mpeg',
     outputExt: 'wav',
     engine: 'ffmpeg',
-    buildArgs: (input, output) => ['-i', input, '-vn', '-acodec', 'pcm_s16le', output],
+    options: [BIT_DEPTH, SAMPLE_RATE],
+    buildArgs: (input, output, opts) => [
+      '-i', input, '-vn', ...losslessArgs('wav', String(opts.bitDepth ?? '16'), String(opts.sampleRate ?? '44100')), output,
+    ],
   },
   {
     id: 'wav-to-mp3',
@@ -157,7 +195,10 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: '.wav,audio/wav,audio/x-wav',
     outputExt: 'flac',
     engine: 'ffmpeg',
-    buildArgs: (input, output) => ['-i', input, '-vn', '-acodec', 'flac', output],
+    options: [BIT_DEPTH, SAMPLE_RATE],
+    buildArgs: (input, output, opts) => [
+      '-i', input, '-vn', ...losslessArgs('flac', String(opts.bitDepth ?? '16'), String(opts.sampleRate ?? '44100')), output,
+    ],
   },
   {
     id: 'video-to-audio',
@@ -174,15 +215,19 @@ export const MEDIA_TOOLS: MediaTool[] = [
         { value: 'ogg', label: 'OGG' },
         { value: 'flac', label: 'FLAC' },
       ], default: 0 },
+      BIT_DEPTH,
+      SAMPLE_RATE,
       { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320 },
     ],
     buildArgs: (input, output, opts) => {
       const fmt = String(opts.format ?? 'mp3');
-      const codec = fmt === 'wav' ? 'pcm_s16le' : fmt === 'flac' ? 'flac' : fmt === 'ogg' ? 'libvorbis' : 'libmp3lame';
-      const extra =
-        fmt === 'wav' || fmt === 'flac' ? []
-        : fmt === 'ogg' ? ['-q:a', '5']
-        : ['-b:a', `${opts.quality ?? 192}k`];
+      const bd = String(opts.bitDepth ?? '16');
+      const sr = String(opts.sampleRate ?? '44100');
+      if (fmt === 'wav' || fmt === 'flac') {
+        return ['-i', input, '-vn', ...losslessArgs(fmt, bd, sr), output];
+      }
+      const codec = fmt === 'ogg' ? 'libvorbis' : 'libmp3lame';
+      const extra = fmt === 'ogg' ? ['-q:a', '5'] : ['-b:a', `${opts.quality ?? 192}k`];
       return ['-i', input, '-vn', '-acodec', codec, ...extra, output];
     },
   },
@@ -201,14 +246,19 @@ export const MEDIA_TOOLS: MediaTool[] = [
         { value: 'mp3', label: 'MP3' },
         { value: 'wav', label: 'WAV' },
       ], default: 0 },
+      BIT_DEPTH,
+      SAMPLE_RATE,
     ],
     buildArgs: (input, output, opts) => {
       const start = num(opts.start, 0);
       const end = Math.max(num(opts.end, 30), start + 0.1);
       const fmt = String(opts.format ?? 'mp3');
-      const codec = fmt === 'wav' ? 'pcm_s16le' : 'libmp3lame';
-      const extra = fmt === 'wav' ? [] : ['-q:a', '2'];
-      return ['-ss', String(start), '-to', String(end), '-i', input, '-vn', '-acodec', codec, ...extra, output];
+      const bd = String(opts.bitDepth ?? '16');
+      const sr = String(opts.sampleRate ?? '44100');
+      if (fmt === 'wav') {
+        return ['-ss', String(start), '-to', String(end), '-i', input, '-vn', ...losslessArgs('wav', bd, sr), output];
+      }
+      return ['-ss', String(start), '-to', String(end), '-i', input, '-vn', '-acodec', 'libmp3lame', '-q:a', '2', output];
     },
   },
   {
@@ -219,14 +269,16 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: 'audio/*',
     outputExt: 'mp3',
     engine: 'ffmpeg',
-    options: [OUTPUT_FORMAT, { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320 }],
+    options: [OUTPUT_FORMAT, BIT_DEPTH, SAMPLE_RATE, { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320 }],
     buildArgs: (input, output, opts) => {
       const fmt = String(opts.format ?? 'mp3');
-      const codec = fmt === 'wav' ? 'pcm_s16le' : fmt === 'flac' ? 'flac' : fmt === 'ogg' ? 'libvorbis' : 'libmp3lame';
-      const extra =
-        fmt === 'wav' || fmt === 'flac' ? []
-        : fmt === 'ogg' ? ['-q:a', '5']
-        : ['-b:a', `${opts.quality ?? 192}k`];
+      const bd = String(opts.bitDepth ?? '16');
+      const sr = String(opts.sampleRate ?? '44100');
+      if (fmt === 'wav' || fmt === 'flac') {
+        return ['-i', input, '-vn', ...losslessArgs(fmt, bd, sr), output];
+      }
+      const codec = fmt === 'ogg' ? 'libvorbis' : 'libmp3lame';
+      const extra = fmt === 'ogg' ? ['-q:a', '5'] : ['-b:a', `${opts.quality ?? 192}k`];
       return ['-i', input, '-vn', '-acodec', codec, ...extra, output];
     },
   },
