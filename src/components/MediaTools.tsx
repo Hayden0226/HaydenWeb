@@ -339,6 +339,25 @@ export default function MediaTools() {
             )}
           </div>
 
+          {/* Quality warning */}
+          {selected.options && selected.options.length > 0 && (
+            <div
+              className="mb-6 flex items-start gap-3 p-3 rounded-xl border text-sm"
+              style={{
+                backgroundColor: 'color-mix(in srgb, var(--accent) 8%, var(--bg-secondary))',
+                borderColor: 'color-mix(in srgb, var(--accent) 30%, var(--border))',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <span className="text-lg leading-none">⚠️</span>
+              <p className="leading-relaxed">
+                默认已用最高质量（高分辨率 / 高帧率 / 高码率），耗时更长、内存占用更大；若转换失败，请手动把
+                <span className="font-medium" style={{ color: 'var(--accent)' }}> 帧率、宽度或质量 </span>
+                调低后重试。
+              </p>
+            </div>
+          )}
+
           {/* Options */}
           {selected.options && selected.options.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
