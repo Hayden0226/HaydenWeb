@@ -41,6 +41,14 @@ function classifyPreview(file: File): PreviewKind {
   return 'other';
 }
 
+function classifyOutputName(name: string): PreviewKind {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg', 'avif'].includes(ext)) return 'image';
+  if (['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac', 'opus', 'wma'].includes(ext)) return 'audio';
+  if (['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', 'mpg', 'mpeg', 'wmv'].includes(ext)) return 'video';
+  return 'other';
+}
+
 function OptionControl({
   option,
   value,
@@ -101,6 +109,7 @@ export default function MediaTools() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [resultUrls, setResultUrls] = useState<string[]>([]);
 
   const tools = useMemo(() => MEDIA_TOOLS.filter((tool) => tool.category === category), [category]);
 
@@ -139,6 +148,16 @@ export default function MediaTools() {
     setPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [file]);
+
+  useEffect(() => {
+    if (!result) {
+      setResultUrls([]);
+      return;
+    }
+    const urls = result.blobs.map((blob) => URL.createObjectURL(blob));
+    setResultUrls(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [result]);
 
   async function handleConvert() {
     if (!file || !selected) return;
@@ -371,22 +390,47 @@ export default function MediaTools() {
 
           {status === 'done' && result && (
             <div className="mt-6 p-4 rounded-xl" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-              <p className="mb-3" style={{ color: 'var(--text-primary)' }}>
+              <p className="mb-4" style={{ color: 'var(--text-primary)' }}>
                 ✅ 转换完成（{result.blobs.reduce((sum, blob) => sum + blob.size, 0) / 1024 / 1024 >= 1
                   ? `${(result.blobs.reduce((sum, blob) => sum + blob.size, 0) / 1024 / 1024).toFixed(2)} MB`
                   : `${Math.round(result.blobs.reduce((sum, blob) => sum + blob.size, 0) / 1024)} KB`}）
               </p>
-              <div className="flex flex-wrap gap-3">
-                {result.blobs.map((blob, index) => (
-                  <button
-                    key={index}
-                    onClick={() => download(blob, result.names[index])}
-                    className="px-4 py-2 rounded-lg font-medium transition-all cursor-pointer hover:opacity-90 active:scale-95"
-                    style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-primary)' }}
-                  >
-                    ⬇️ 下载 {result.names[index]}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-4">
+                {result.blobs.map((blob, index) => {
+                  const kind = classifyOutputName(result.names[index]);
+                  const url = resultUrls[index];
+                  return (
+                    <div
+                      key={index}
+                      className="flex-1 min-w-[260px] max-w-full p-4 rounded-xl border"
+                      style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+                    >
+                      <div className="mb-3">
+                        {url && kind === 'image' && (
+                          <img src={url} alt={result.names[index]} className="w-full max-h-72 object-contain rounded-lg" />
+                        )}
+                        {url && kind === 'audio' && (
+                          <audio controls src={url} className="w-full" style={{ colorScheme: 'light' }} />
+                        )}
+                        {url && kind === 'video' && (
+                          <video controls src={url} className="w-full max-h-72 rounded-lg" style={{ backgroundColor: '#000', colorScheme: 'light' }} />
+                        )}
+                        {kind === 'other' && (
+                          <div className="text-sm py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
+                            📦 该格式暂不支持预览
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => download(blob, result.names[index])}
+                        className="w-full px-4 py-2 rounded-lg font-medium transition-all cursor-pointer hover:opacity-90 active:scale-95"
+                        style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-primary)' }}
+                      >
+                        ⬇️ 下载 {result.names[index]}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

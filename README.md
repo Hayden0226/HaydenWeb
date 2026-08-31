@@ -39,6 +39,7 @@ Hayden 的个人网站，基于 [Astro](https://astro.build/) + React + Tailwind
 - **Toodles 转换增强**：`MP4 → GIF` 加入 `palettegen/paletteuse` 调色板改善色带；`Video → Audio` 支持 MP3 比特率；`Audio Cutter` 钳制起终点；并提升各参数上限（GIF 宽度 8192、抽帧 500、CRF 51、视频宽度 8192）。
 - **Toodles 默认参数拉满**：各工具默认值全部提到上限（MP3 320kbps、质量 100%、CRF 18、GIF 50fps、抽帧 500、尺寸 8192），并修复抽帧运行的隐藏 `Math.min(100)` 硬钳制，真正生效到 500。
 - **Toodles 微调**：`MP4 → GIF` 的宽度上限与默认值从 8192 降到 4K（3840px），避免默认动图过大。
+- **Toodles 结果预览**：转换完成后直接在页面内预览产物（图片/动图、音频、视频均可播放试看），无需先下载；ZIP 等不支持预览的格式会给出提示。
 
 </details>
 
