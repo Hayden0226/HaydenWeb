@@ -95,9 +95,9 @@ function baseNameOf(fileName: string): string {
 // ---- Tool definitions --------------------------------------------------------
 
 const QUALITY = [
-  { value: '10', label: '高 (10)' },
-  { value: '5', label: '中 (5)' },
-  { value: '0', label: '低 (0)' },
+  { value: '320', label: '高 (320 kbps)' },
+  { value: '192', label: '中 (192 kbps)' },
+  { value: '128', label: '低 (128 kbps)' },
 ];
 
 const JPEG_QUALITY: ToolOption = { key: 'quality', label: 'JPEG 质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 0.92 };
@@ -135,9 +135,9 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'mp3',
     engine: 'ffmpeg',
     options: [
-      { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 5 },
+      { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 192 },
     ],
-    buildArgs: (input, output, opts) => ['-i', input, '-vn', '-acodec', 'libmp3lame', '-q:a', String(opts.quality ?? 5), output],
+    buildArgs: (input, output, opts) => ['-i', input, '-vn', '-acodec', 'libmp3lame', '-b:a', `${opts.quality ?? 192}k`, output],
   },
   {
     id: 'mp3-to-ogg',
@@ -214,11 +214,14 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: 'audio/*',
     outputExt: 'mp3',
     engine: 'ffmpeg',
-    options: [OUTPUT_FORMAT, { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 5 }],
+    options: [OUTPUT_FORMAT, { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 192 }],
     buildArgs: (input, output, opts) => {
       const fmt = String(opts.format ?? 'mp3');
       const codec = fmt === 'wav' ? 'pcm_s16le' : fmt === 'flac' ? 'flac' : fmt === 'ogg' ? 'libvorbis' : 'libmp3lame';
-      const extra = fmt === 'wav' || fmt === 'flac' ? [] : ['-q:a', String(opts.quality ?? 5)];
+      const extra =
+        fmt === 'wav' || fmt === 'flac' ? []
+        : fmt === 'ogg' ? ['-q:a', '5']
+        : ['-b:a', `${opts.quality ?? 192}k`];
       return ['-i', input, '-vn', '-acodec', codec, ...extra, output];
     },
   },
