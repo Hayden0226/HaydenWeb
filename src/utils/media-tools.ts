@@ -16,6 +16,7 @@ export interface ToolOption {
   step?: number;
   default?: number;
   choices?: { value: string; label: string }[];
+  hint?: string;
 }
 
 export interface MediaTool {
@@ -110,7 +111,16 @@ const QUALITY = [
   { value: '128', label: '低 (128 kbps)' },
 ];
 
-const JPEG_QUALITY: ToolOption = { key: 'quality', label: 'JPEG 质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 };
+const JPEG_QUALITY: ToolOption = {
+  key: 'quality',
+  label: 'JPEG 质量',
+  type: 'number',
+  min: 0.1,
+  max: 1,
+  step: 0.05,
+  default: 1,
+  hint: '0.1–1，越接近 1 越清晰、文件越大；PNG 转 JPEG 时透明背景会变白。',
+};
 
 const OUTPUT_FORMAT: ToolOption = {
   key: 'format',
@@ -122,6 +132,7 @@ const OUTPUT_FORMAT: ToolOption = {
     { value: 'ogg', label: 'OGG' },
     { value: 'flac', label: 'FLAC' },
   ],
+  hint: 'MP3 有损体积小、OGG 兼容性好、WAV / FLAC 无损保真但文件更大。',
 };
 
 const BIT_DEPTH: ToolOption = {
@@ -134,6 +145,7 @@ const BIT_DEPTH: ToolOption = {
     { value: '32', label: '32-bit' },
   ],
   default: 16,
+  hint: '位深越高单点精度越高：16-bit 为 CD 标准，24/32-bit 动态范围更宽、文件更大。',
 };
 
 const SAMPLE_RATE: ToolOption = {
@@ -147,6 +159,7 @@ const SAMPLE_RATE: ToolOption = {
     { value: '192000', label: '192000 Hz' },
   ],
   default: 44100,
+  hint: '采样率越高记录越细腻：44100 Hz 为 CD 标准，96000 / 192000 Hz 适合高解析度音频。',
 };
 
 export const MEDIA_TOOLS: MediaTool[] = [
@@ -173,7 +186,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'mp3',
     engine: 'ffmpeg',
     options: [
-      { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320 },
+      { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320, hint: '码率越高音质越好、文件越大：320 kbps 是 MP3 上限，192 是体积与音质平衡，128 适合网络传输。' },
     ],
     buildArgs: (input, output, opts) => ['-i', input, '-vn', '-acodec', 'libmp3lame', '-b:a', `${opts.quality ?? 192}k`, output],
   },
@@ -214,10 +227,10 @@ export const MEDIA_TOOLS: MediaTool[] = [
         { value: 'wav', label: 'WAV' },
         { value: 'ogg', label: 'OGG' },
         { value: 'flac', label: 'FLAC' },
-      ], default: 0 },
+      ], default: 0, hint: 'MP3 有损体积小、OGG 兼容性好、WAV / FLAC 无损保真但文件更大。' },
       BIT_DEPTH,
       SAMPLE_RATE,
-      { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320 },
+      { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320, hint: '仅 MP3 生效：码率越高音质越好、文件越大，320 kbps 为 MP3 上限。' },
     ],
     buildArgs: (input, output, opts) => {
       const fmt = String(opts.format ?? 'mp3');
@@ -240,12 +253,12 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'mp3',
     engine: 'ffmpeg',
     options: [
-      { key: 'start', label: '开始 (秒)', type: 'number', min: 0, step: 0.1, default: 0 },
-      { key: 'end', label: '结束 (秒)', type: 'number', min: 0, step: 0.1, default: 30 },
+      { key: 'start', label: '开始 (秒)', type: 'number', min: 0, step: 0.1, default: 0, hint: '片段的起始时间，支持小数，例如 5.5 表示第 5.5 秒。' },
+      { key: 'end', label: '结束 (秒)', type: 'number', min: 0, step: 0.1, default: 30, hint: '片段的结束时间，需大于开始时间。' },
       { key: 'format', label: '输出格式', type: 'select', choices: [
         { value: 'mp3', label: 'MP3' },
         { value: 'wav', label: 'WAV' },
-      ], default: 0 },
+      ], default: 0, hint: '截取后输出 MP3（有损、体积小）或 WAV（无损、体积大）。' },
       BIT_DEPTH,
       SAMPLE_RATE,
     ],
@@ -269,7 +282,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: 'audio/*',
     outputExt: 'mp3',
     engine: 'ffmpeg',
-    options: [OUTPUT_FORMAT, BIT_DEPTH, SAMPLE_RATE, { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320 }],
+    options: [OUTPUT_FORMAT, BIT_DEPTH, SAMPLE_RATE, { key: 'quality', label: '质量', type: 'select', choices: QUALITY, default: 320, hint: '仅 MP3 生效：码率越高音质越好、文件越大，320 kbps 为 MP3 上限。' }],
     buildArgs: (input, output, opts) => {
       const fmt = String(opts.format ?? 'mp3');
       const bd = String(opts.bitDepth ?? '16');
@@ -293,8 +306,8 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'gif',
     engine: 'ffmpeg',
     options: [
-      { key: 'fps', label: '帧率', type: 'number', min: 1, max: 50, step: 1, default: 50 },
-      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 3840, step: 16, default: 720 },
+      { key: 'fps', label: '帧率', type: 'number', min: 1, max: 50, step: 1, default: 50, hint: '每秒画面数。GIF 建议 10–30：太低会卡顿，过高容易卡顿且文件巨大。' },
+      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 3840, step: 16, default: 720, hint: '输出宽度，越小文件越小。4K 源建议 ≤1920，否则浏览器内存吃紧。' },
     ],
     buildArgs: (input, output, opts) => [
       '-i', input,
@@ -342,11 +355,11 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'zip',
     engine: 'ffmpeg',
     options: [
-      { key: 'frames', label: '最多帧数', type: 'number', min: 1, max: 500, step: 1, default: 500 },
+      { key: 'frames', label: '最多帧数', type: 'number', min: 1, max: 500, step: 1, default: 500, hint: '最多抽取的帧数，按每秒 1 帧抽。长视频建议设小些，避免 ZIP 过大。' },
       { key: 'format', label: '图片格式', type: 'select', choices: [
         { value: 'png', label: 'PNG' },
         { value: 'jpg', label: 'JPG' },
-      ], default: 0 },
+      ], default: 0, hint: 'PNG 无损但体积大，JPG 体积小且有损。' },
     ],
   },
   {
@@ -358,7 +371,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'mp4',
     engine: 'ffmpeg',
     options: [
-      { key: 'crf', label: '质量 CRF (越小越清晰)', type: 'number', min: 18, max: 51, step: 1, default: 18 },
+      { key: 'crf', label: '质量 CRF (越小越清晰)', type: 'number', min: 18, max: 51, step: 1, default: 18, hint: '恒定质量因子，数值越小越清晰、文件越大：18 接近无损，28 是常用平衡，51 最糊。' },
     ],
     buildArgs: (input, output, opts) => [
       '-i', input,
@@ -376,7 +389,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'mp4',
     engine: 'ffmpeg',
     options: [
-      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 8192, step: 16, default: 1280 },
+      { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 8192, step: 16, default: 1280, hint: '输出宽度，高度按原比例自动缩放。1280 / 1920 是常见清晰度，过大会显著变慢。' },
     ],
     buildArgs: (input, output, opts) => [
       '-i', input,
@@ -417,7 +430,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: 'image/png',
     outputExt: 'webp',
     engine: 'image',
-    options: [{ key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 }],
+    options: [{ key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1, hint: '0.1–1，越接近 1 越清晰、文件越大。WebP 体积通常比 JPG 小且支持透明。' }],
     runImage: (blob, opts) => reencode(blob, 'image/webp', num(opts.quality, 0.85)).then((b) => ({ blob: b, outputExt: 'webp' })),
   },
   {
@@ -428,7 +441,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: 'image/jpeg,image/jpg',
     outputExt: 'webp',
     engine: 'image',
-    options: [{ key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 }],
+    options: [{ key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1, hint: '0.1–1，越接近 1 越清晰、文件越大。WebP 体积通常比 JPG 小且支持透明。' }],
     runImage: (blob, opts) => reencode(blob, 'image/webp', num(opts.quality, 0.85)).then((b) => ({ blob: b, outputExt: 'webp' })),
   },
   {
@@ -464,8 +477,8 @@ export const MEDIA_TOOLS: MediaTool[] = [
         { value: 'webp', label: 'WebP' },
         { value: 'jpeg', label: 'JPEG' },
         { value: 'png', label: 'PNG' },
-      ], default: 0 },
-      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 },
+      ], default: 0, hint: 'WebP 体积最小、JPEG 通用、PNG 无损但较大。' },
+      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1, hint: '0.1–1，越低文件越小、画质越糊。要压缩就先调低质量看效果。' },
     ],
     runImage: (blob, opts) => {
       const fmt = String(opts.format ?? 'webp');
@@ -482,12 +495,12 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'webp',
     engine: 'image',
     options: [
-      { key: 'width', label: '目标宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1280 },
+      { key: 'width', label: '目标宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1280, hint: '缩放后的宽度，高度按原比例自动变化。' },
       { key: 'format', label: '输出格式', type: 'select', choices: [
         { value: 'jpeg', label: 'JPEG' },
         { value: 'webp', label: 'WebP' },
-      ], default: 0 },
-      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 },
+      ], default: 0, hint: 'JPEG 通用、WebP 体积更小。' },
+      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1, hint: '0.1–1，越接近 1 越清晰、文件越大。' },
     ],
     runImage: async (blob, opts) => {
       const width = num(opts.width, 1280);
@@ -514,14 +527,14 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'jpeg',
     engine: 'image',
     options: [
-      { key: 'width', label: '输出宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1080 },
-      { key: 'height', label: '输出高度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1080 },
+      { key: 'width', label: '输出宽度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1080, hint: '裁剪后的画布宽度，居中裁剪。' },
+      { key: 'height', label: '输出高度 (px)', type: 'number', min: 16, max: 8192, step: 16, default: 1080, hint: '裁剪后的画布高度，居中裁剪。' },
       { key: 'format', label: '输出格式', type: 'select', choices: [
         { value: 'jpeg', label: 'JPEG' },
         { value: 'webp', label: 'WebP' },
         { value: 'png', label: 'PNG' },
-      ], default: 0 },
-      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1 },
+      ], default: 0, hint: 'JPEG 通用、WebP 体积更小、PNG 无损。' },
+      { key: 'quality', label: '质量', type: 'number', min: 0.1, max: 1, step: 0.05, default: 1, hint: '0.1–1，越接近 1 越清晰、文件越大。' },
     ],
     runImage: async (blob, opts) => {
       const outW = num(opts.width, 1080);
