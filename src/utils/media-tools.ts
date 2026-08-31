@@ -254,7 +254,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     accept: '.gif,image/gif',
     outputExt: 'mp4',
     engine: 'ffmpeg',
-    buildArgs: (input, output) => ['-i', input, '-movflags', '+faststart', '-pix_fmt', 'yuv420p', output],
+    buildArgs: (input, output) => ['-i', input, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', output],
   },
   {
     id: 'mp4-to-webm',
@@ -582,7 +582,12 @@ export async function convertWithTool(
 export function defaultOptions(tool: MediaTool): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const option of tool.options ?? []) {
-    result[option.key] = option.type === 'select' ? String(option.default ?? 0) : Number(option.default ?? 0);
+    if (option.type === 'select') {
+      const first = option.choices?.[0]?.value ?? '';
+      result[option.key] = String(option.default && option.default > 0 ? option.default : first);
+    } else {
+      result[option.key] = Number(option.default ?? 0);
+    }
   }
   return result;
 }
