@@ -351,8 +351,8 @@ export default function MediaTools() {
             >
               <span className="text-lg leading-none">⚠️</span>
               <p className="leading-relaxed">
-                默认已用较高质量（高分辨率 / 高帧率 / 高码率），耗时更长、内存占用更大；若转换失败，请手动把
-                <span className="font-medium" style={{ color: 'var(--accent)' }}> 帧率、宽度或质量 </span>
+                默认已用较高质量（高分辨率 / 高帧率 / 高码率），耗时更长、内存占用更大；若转换失败，说明浏览器 FFmpeg 内存爆了，请手动把
+                <span className="font-medium" style={{ color: 'var(--accent)' }}> 帧率、px 或 质量 </span>
                 调低后重试。
               </p>
             </div>
