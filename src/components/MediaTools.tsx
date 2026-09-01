@@ -488,10 +488,14 @@ export default function MediaTools() {
               }}
             >
               <span className="text-base leading-none">💡</span>
-              <p>
-                关于位深 / 采样率：从 16-bit / 44100 Hz 往上调并不会增加真实音频信息（MP3 等有损源丢失的部分也无法恢复），
-                只会让文件更大；高位深的真正价值在于混音处理（如 Audio Mixer）和保留高质量源。普通转换用 16-bit / 44100 Hz 就足够。
-              </p>
+              <div>
+                <p>
+                  关于位深 / 采样率：从 16-bit / 44100 Hz 往上调并不会增加真实音频信息，只会让文件更大；高位深的真正价值在于混音处理（如 Audio Mixer）和保留高质量源。普通转换用 16-bit / 44100 Hz 就足够。
+                </p>
+                <p className="mt-1 font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  ⚠️ MP3 是有损格式，高频细节在被压缩那一刻就丢了；转 WAV 只是把剩下的数据「解包」成 PCM，丢失的信息不会回来。
+                </p>
+              </div>
             </div>
           )}
 
