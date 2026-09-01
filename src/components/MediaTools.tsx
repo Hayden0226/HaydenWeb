@@ -107,8 +107,11 @@ export default function MediaTools() {
   const [result, setResult] = useState<ConvertResult | null>(null);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const file2InputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [file2, setFile2] = useState<File | null>(null);
+  const [previewUrl2, setPreviewUrl2] = useState<string | null>(null);
   const [resultUrls, setResultUrls] = useState<string[]>([]);
 
   const tools = useMemo(() => MEDIA_TOOLS.filter((tool) => tool.category === category), [category]);
@@ -116,6 +119,7 @@ export default function MediaTools() {
   function chooseTool(tool: MediaTool) {
     setSelected(tool);
     setFile(null);
+    setFile2(null);
     setResult(null);
     setStatus('idle');
     setError('');
@@ -139,6 +143,21 @@ export default function MediaTools() {
     setError('');
   }
 
+  function setInputFile2(next: File | null) {
+    if (next && selected && next.type && selected.accept !== 'video/*' && selected.accept !== 'image/*' && selected.accept !== 'audio/*,video/*' && selected.accept !== 'audio/*') {
+      const accepted = selected.accept.split(',').map((s) => s.trim().toLowerCase());
+      const typeOk = accepted.some((a) => a === next.type.toLowerCase() || (a.startsWith('.') && next.name.toLowerCase().endsWith(a)));
+      if (!typeOk) {
+        setError(`文件类型不匹配，请选择 ${selected.accept} 文件`);
+        return;
+      }
+    }
+    setFile2(next);
+    setResult(null);
+    setStatus('idle');
+    setError('');
+  }
+
   useEffect(() => {
     if (!file) {
       setPreviewUrl(null);
@@ -148,6 +167,16 @@ export default function MediaTools() {
     setPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [file]);
+
+  useEffect(() => {
+    if (!file2) {
+      setPreviewUrl2(null);
+      return;
+    }
+    const url = URL.createObjectURL(file2);
+    setPreviewUrl2(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file2]);
 
   useEffect(() => {
     if (!result) {
@@ -161,6 +190,10 @@ export default function MediaTools() {
 
   async function handleConvert() {
     if (!file || !selected) return;
+    if (selected.id === 'audio-mixer' && !file2) {
+      setError('请选择两段音频后再转换');
+      return;
+    }
     setStatus('loading');
     setProgress(0);
     setLog([]);
@@ -174,7 +207,8 @@ export default function MediaTools() {
           setProgress(ratio);
           setStatus('processing');
         },
-        (line) => setLog((prev) => [...prev.slice(-40), line])
+        (line) => setLog((prev) => [...prev.slice(-40), line]),
+        selected.id === 'audio-mixer' ? file2 : null
       );
       setResult({ blobs: converted.blobs, names: converted.outputNames });
       setStatus('done');
@@ -188,6 +222,8 @@ export default function MediaTools() {
   const percent = Math.min(100, Math.max(0, Math.round(progress * 100)));
   const isBusy = status === 'loading' || status === 'processing';
   const previewKind = file ? classifyPreview(file) : 'other';
+  const requiresTwo = selected?.id === 'audio-mixer';
+  const canConvert = !!file && (!requiresTwo || !!file2);
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -275,6 +311,9 @@ export default function MediaTools() {
           </div>
 
           {/* File drop zone */}
+          {selected.id === 'audio-mixer' && (
+            <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>音频 1（底层，可选伴奏或人声）</p>
+          )}
           <div
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
             onDragEnter={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -282,8 +321,10 @@ export default function MediaTools() {
             onDrop={(e) => {
               e.preventDefault();
               setIsDragging(false);
-              const dropped = e.dataTransfer.files?.[0] ?? null;
-              if (dropped) setInputFile(dropped);
+              const dropped = e.dataTransfer.files;
+              if (!dropped || dropped.length === 0) return;
+              setInputFile(dropped[0]);
+              if (selected.id === 'audio-mixer' && dropped[1]) setInputFile2(dropped[1]);
             }}
             onClick={() => fileInputRef.current?.click()}
             className="rounded-xl border-2 border-dashed p-10 text-center mb-6 cursor-pointer transition-all"
@@ -339,6 +380,47 @@ export default function MediaTools() {
             )}
           </div>
 
+          {/* Second file slot for Audio Mixer */}
+          {selected.id === 'audio-mixer' && (
+            <div className="mb-6">
+              <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>音频 2（第二段，叠加在音频 1 之上）</p>
+              <div
+                onClick={() => file2InputRef.current?.click()}
+                className="rounded-xl border-2 border-dashed p-6 text-center cursor-pointer transition-all"
+                style={{
+                  borderColor: file2 ? 'var(--accent)' : 'var(--border)',
+                  backgroundColor: file2 ? 'color-mix(in srgb, var(--accent) 8%, var(--bg-secondary))' : 'var(--bg-secondary)',
+                }}
+              >
+                <input
+                  ref={file2InputRef}
+                  type="file"
+                  accept={selected.accept}
+                  className="hidden"
+                  onChange={(e) => setInputFile2(e.target.files?.[0] ?? null)}
+                />
+                {file2 ? (
+                  <div className="flex flex-col items-center gap-1" style={{ color: 'var(--text-primary)' }}>
+                    {previewUrl2 && (
+                      <audio controls src={previewUrl2} className="w-full mb-1" style={{ colorScheme: 'light' }} />
+                    )}
+                    <div className="font-semibold">{file2.name}</div>
+                    <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      {(file2.size / 1024 / 1024).toFixed(2)} MB · {file2.type || '未知类型'}
+                    </div>
+                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>点击替换</div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-3xl mb-1">🎵</div>
+                    <p style={{ color: 'var(--text-primary)' }}>点击选择第二段音频</p>
+                    <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>例如伴奏或人声</p>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Quality warning */}
           {selected.options && selected.options.length > 0 && (
             <div
@@ -390,7 +472,7 @@ export default function MediaTools() {
           {/* Convert button + progress */}
           <button
             onClick={handleConvert}
-            disabled={!file || isBusy}
+            disabled={!canConvert || isBusy}
             className="w-full py-3 rounded-xl font-semibold transition-all cursor-pointer hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
             style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-primary)' }}
           >

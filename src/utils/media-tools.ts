@@ -295,6 +295,16 @@ export const MEDIA_TOOLS: MediaTool[] = [
       return ['-i', input, '-vn', '-acodec', codec, ...extra, output];
     },
   },
+  {
+    id: 'audio-mixer',
+    category: 'audio',
+    label: 'Audio Mixer',
+    subtitle: '两段音频叠加混音',
+    accept: 'audio/*',
+    outputExt: 'wav',
+    engine: 'ffmpeg',
+    options: [BIT_DEPTH, SAMPLE_RATE],
+  },
 
   // ---- Video ----
   {
@@ -625,13 +635,72 @@ async function convertVideoToImages(
   return { blobs: [blob], outputNames: [`${baseNameOf(file.name)}-frames.zip`] };
 }
 
+async function convertAudioMix(
+  file: File,
+  file2: File,
+  opts: Record<string, unknown>,
+  onProgress: (ratio: number) => void,
+  onLog?: (line: string) => void
+): Promise<ConvertResult> {
+  const ffmpeg = await getFFmpeg();
+  const extOf = (name: string) => (name.match(/\.([a-z0-9]+)$/i)?.[1] || 'wav').toLowerCase();
+  const name0 = `in0.${extOf(file.name)}`;
+  const name1 = `in1.${extOf(file2.name)}`;
+  await ffmpeg.writeFile(name0, new Uint8Array(await file.arrayBuffer()));
+  await ffmpeg.writeFile(name1, new Uint8Array(await file2.arrayBuffer()));
+
+  const bd = String(opts.bitDepth ?? '32');
+  const sr = String(opts.sampleRate ?? '192000');
+  const codec = bd === '24' ? 'pcm_s24le' : bd === '32' ? 'pcm_s32le' : 'pcm_s16le';
+
+  const progressHandler = (event: { progress: number; time: number }) => {
+    onProgress(event.progress);
+  };
+  const logHandler = (event: { message: string }) => {
+    if (event && typeof event.message === 'string') onLog?.(event.message);
+  };
+  ffmpeg.on('progress', progressHandler);
+  ffmpeg.on('log', logHandler);
+
+  const outputName = 'mixed.wav';
+  let exitCode = 0;
+  try {
+    exitCode = await ffmpeg.exec([
+      '-i', name0, '-i', name1,
+      '-filter_complex', '[0:a][1:a]amix=inputs=2:duration=longest:dropout_transition=2:normalize=0',
+      '-vn', '-acodec', codec, '-ar', sr, outputName,
+    ]);
+  } finally {
+    ffmpeg.off('progress', progressHandler);
+    ffmpeg.off('log', logHandler);
+  }
+
+  await ffmpeg.deleteFile(name0).catch(() => undefined);
+  await ffmpeg.deleteFile(name1).catch(() => undefined);
+  if (exitCode !== 0) {
+    await ffmpeg.deleteFile(outputName).catch(() => undefined);
+    throw new Error(`音频叠加失败（退出码 ${exitCode}），请确认两段音频格式有效，或调低位深 / 采样率后重试`);
+  }
+
+  const output = await ffmpeg.readFile(outputName);
+  await ffmpeg.deleteFile(outputName).catch(() => undefined);
+  const bytes = typeof output === 'string' ? new TextEncoder().encode(output) : new Uint8Array(output);
+  return { blobs: [new Blob([bytes])], outputNames: [`${baseNameOf(file.name)}-mixed.wav`] };
+}
+
 export async function convertWithTool(
   tool: MediaTool,
   file: File,
   opts: Record<string, unknown>,
   onProgress: (ratio: number) => void,
-  onLog?: (line: string) => void
+  onLog?: (line: string) => void,
+  file2?: File | null
 ): Promise<ConvertResult> {
+  if (tool.id === 'audio-mixer') {
+    if (!file2) throw new Error('请选择两段音频后再转换');
+    return convertAudioMix(file, file2, opts, onProgress, onLog);
+  }
+
   if (tool.id === 'video-to-images') {
     return convertVideoToImages(file, opts, onProgress);
   }
