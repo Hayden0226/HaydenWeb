@@ -78,7 +78,7 @@ function AudioPreview({ url, className }: { url: string; className?: string }) {
         const w = canvas.width;
         const h = canvas.height;
         const step = Math.max(1, Math.floor(data.length / w));
-        const pad = Math.ceil(h * 0.14);
+        const pad = Math.ceil(h * 0.15);
         const avail = h - pad * 2;
         const mid = h / 2;
         const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#3b82f6';
@@ -138,7 +138,7 @@ function AudioPreview({ url, className }: { url: string; className?: string }) {
   return (
     <div className={className}>
       <div className="relative w-full overflow-hidden rounded-lg">
-        <canvas ref={canvasRef} width={640} height={96} className="w-full block" style={{ height: '96px' }} />
+        <canvas ref={canvasRef} width={640} height={128} className="w-full block" style={{ height: '128px' }} />
         <div
           className="absolute inset-y-0 left-0 pointer-events-none"
           style={{
