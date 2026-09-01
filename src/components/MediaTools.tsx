@@ -49,9 +49,13 @@ function classifyOutputName(name: string): PreviewKind {
   return 'other';
 }
 
-function Waveform({ url, className }: { url: string; className?: string }) {
+function AudioPreview({ url, className }: { url: string; className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
 
+  // 绘制波形：加高容器并在上下留边距，峰值不会被裁切
   useEffect(() => {
     if (!url || !canvasRef.current) return;
     const canvas = canvasRef.current;
@@ -74,6 +78,8 @@ function Waveform({ url, className }: { url: string; className?: string }) {
         const w = canvas.width;
         const h = canvas.height;
         const step = Math.max(1, Math.floor(data.length / w));
+        const pad = Math.ceil(h * 0.14);
+        const avail = h - pad * 2;
         const mid = h / 2;
         const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#3b82f6';
         ctx.clearRect(0, 0, w, h);
@@ -88,9 +94,9 @@ function Waveform({ url, className }: { url: string; className?: string }) {
             if (value < min) min = value;
             if (value > max) max = value;
           }
-          const yTop = mid - max * mid;
-          const yBottom = mid - min * mid;
-          ctx.fillRect(i, yTop, 1, Math.max(1, yBottom - yTop));
+          const yTop = mid - max * (avail / 2);
+          const yBottom = mid - min * (avail / 2);
+          ctx.fillRect(i, Math.max(pad, yTop), 1, Math.max(1, Math.min(h - pad, yBottom) - Math.max(pad, yTop)));
         }
       } catch {
         // 解码失败时静默降级，仍保留 <audio> 播放
@@ -104,7 +110,64 @@ function Waveform({ url, className }: { url: string; className?: string }) {
     };
   }, [url]);
 
-  return <canvas ref={canvasRef} width={640} height={80} className={className} />;
+  // 跟随播放进度，让竖条平滑滑动
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    setProgress(0);
+    setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+    const onTime = () => setProgress(audio.currentTime);
+    const onLoaded = () => setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+    const onEnded = () => setProgress(0);
+    audio.addEventListener('timeupdate', onTime);
+    audio.addEventListener('loadedmetadata', onLoaded);
+    audio.addEventListener('durationchange', onLoaded);
+    audio.addEventListener('seeked', onTime);
+    audio.addEventListener('ended', onEnded);
+    return () => {
+      audio.removeEventListener('timeupdate', onTime);
+      audio.removeEventListener('loadedmetadata', onLoaded);
+      audio.removeEventListener('durationchange', onLoaded);
+      audio.removeEventListener('seeked', onTime);
+      audio.removeEventListener('ended', onEnded);
+    };
+  }, [url]);
+
+  const pct = duration > 0 ? Math.min(100, Math.max(0, (progress / duration) * 100)) : 0;
+
+  return (
+    <div className={className}>
+      <div className="relative w-full overflow-hidden rounded-lg">
+        <canvas ref={canvasRef} width={640} height={96} className="w-full block" style={{ height: '96px' }} />
+        <div
+          className="absolute inset-y-0 left-0 pointer-events-none"
+          style={{
+            width: `${pct}%`,
+            background: 'color-mix(in srgb, var(--accent) 16%, transparent)',
+            transition: 'width 0.1s linear',
+          }}
+        />
+        <div
+          className="absolute top-0 bottom-0 pointer-events-none"
+          style={{
+            left: `${pct}%`,
+            width: '2px',
+            transform: 'translateX(-1px)',
+            background: 'var(--accent-fg)',
+            boxShadow: '0 0 0 1px rgba(12, 74, 110, 0.4), 0 0 8px rgba(12, 74, 110, 0.5)',
+            transition: 'left 0.1s linear',
+          }}
+        />
+      </div>
+      <audio
+        ref={audioRef}
+        controls
+        src={url}
+        className="w-full"
+        style={{ colorScheme: 'light', marginTop: '0.25rem' }}
+      />
+    </div>
+  );
 }
 
 function OptionControl({
@@ -418,13 +481,7 @@ export default function MediaTools() {
                     />
                   ) : previewKind === 'audio' ? (
                     <div className="w-full mb-2">
-                      <Waveform url={previewUrl} className="w-full h-16 mb-1 rounded-lg" />
-                      <audio
-                        controls
-                        src={previewUrl}
-                        className="w-full"
-                        style={{ colorScheme: 'light' }}
-                      />
+                      <AudioPreview url={previewUrl} className="w-full" />
                     </div>
                   ) : previewKind === 'image' ? (
                     <img src={previewUrl} alt="预览" className="w-28 h-28 object-contain rounded-lg mb-2" />
@@ -472,8 +529,7 @@ export default function MediaTools() {
                   <div className="flex flex-col items-center gap-1" style={{ color: 'var(--text-primary)' }}>
                     {previewUrl2 && (
                       <div className="w-full mb-1">
-                        <Waveform url={previewUrl2} className="w-full h-16 mb-1 rounded-lg" />
-                        <audio controls src={previewUrl2} className="w-full" style={{ colorScheme: 'light' }} />
+                        <AudioPreview url={previewUrl2} className="w-full" />
                       </div>
                     )}
                     <div className="font-semibold">{file2.name}</div>
@@ -633,8 +689,7 @@ export default function MediaTools() {
                         )}
                         {url && kind === 'audio' && (
                           <div className="w-full">
-                            <Waveform url={url} className="w-full h-16 mb-1 rounded-lg" />
-                            <audio controls src={url} className="w-full" style={{ colorScheme: 'light' }} />
+                            <AudioPreview url={url} className="w-full" />
                           </div>
                         )}
                         {url && kind === 'video' && (
