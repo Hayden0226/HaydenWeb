@@ -469,6 +469,24 @@ export default function MediaTools() {
             </div>
           )}
 
+          {/* Bit depth / sample rate note */}
+          {selected.options?.some((option) => option.key === 'bitDepth') && (
+            <div
+              className="mb-6 flex items-start gap-3 p-3 rounded-xl border text-xs leading-relaxed"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                borderColor: 'var(--border)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              <span className="text-base leading-none">💡</span>
+              <p>
+                关于位深 / 采样率：从 16-bit / 44100 Hz 往上调并不会增加真实音频信息（MP3 等有损源丢失的部分也无法恢复），
+                只会让文件更大；高位深的真正价值在于混音处理（如 Audio Mixer）和保留高质量源。普通转换用 16-bit / 44100 Hz 就足够。
+              </p>
+            </div>
+          )}
+
           {/* Convert button + progress */}
           <button
             onClick={handleConvert}
