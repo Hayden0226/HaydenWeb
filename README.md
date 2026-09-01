@@ -98,6 +98,17 @@ Toodles（导航「妙妙工具」，访问路径 `/tools`）是站点内置的�
 ## 最近更新
 
 <details open>
+<summary><strong>2026-09-01</strong> · Toodles 音频叠加与参数科普</summary>
+
+- **Audio Mixer 上线**：新增「两段音频叠加混音」工具（Audio 分类，第 8 个），可把伴奏 + 人声两段音频同时混成一首歌；两段均可先试听，输出保留原音量（`amix` 不归一化）。
+- **输出扩展名修复**：修复 Audio Converter / Video → Audio / Audio Cutter 选择 WAV / FLAC / OGG 时仍输出 `.mp3` 扩展名导致的「Exactly one MP3 audio stream is required」报错，扩展名现在跟随所选格式。
+- **无损默认最高**：位深默认 32-bit、采样率默认 192000 Hz（所有无损输出通用）；高位深对 Audio Mixer 混音尤其合理。
+- **参数科普说明**：每个参数下方新增一行说明（帧率、CRF、质量、位深、采样率等）；并在相关工具显示科普条：位深 / 采样率升格不增加真实信息、MP3 有损转 WAV 无法恢复（已加粗强调）、视频 / 图片放大不增加清晰度、CRF 18 接近无损压缩有限、Image Compressor 质量 100% 压缩不生效、抽帧 500 会打包超大 ZIP 等。
+- **质量提醒文案**：转换失败提示明确说明「浏览器 FFmpeg 内存爆了」，建议手动调低帧率 / px / 质量。
+
+</details>
+
+<details>
 <summary><strong>2026-08-31</strong> · Toodles 上传音视频预览播放</summary>
 
 - **音视频预览**：Toodles 上传音频 / 视频后，文件区直接出现可播放的控件（播放/暂停、进度条、时间、音量），转换前可先试听 / 试看。
