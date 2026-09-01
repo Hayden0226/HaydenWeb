@@ -96,6 +96,14 @@ function OptionControl({
   );
 }
 
+const TOOL_NOTES: Record<string, string> = {
+  'video-resizer': '注意：放大不会增加真实清晰度。超过原分辨率只是插值放大，画面更糊、文件更大；压缩体积应缩小而非放大。',
+  'image-resizer': '注意：放大不增加真实细节，超过原分辨率只是插值（更糊 + 更大）。压缩体积应缩小宽度或调低质量。',
+  'video-compressor': '注意：CRF 越小越清晰、文件越大。默认 18 接近无损，压缩效果很小；要真正压缩请调到 23–28（体积明显减小，画质仍可接受）。',
+  'image-compressor': '注意：质量设为 1（100%）时压缩几乎不生效，体积基本不变。要真正减小体积，请调低质量或选择 WebP。',
+  'video-to-images': '注意：默认最多 500 帧会打包成很大的 ZIP。长视频建议把帧数调小（如 30–60），或选 JPG 减小体积。',
+};
+
 export default function MediaTools() {
   const [category, setCategory] = useState<Category>('audio');
   const [selected, setSelected] = useState<MediaTool | null>(null);
@@ -484,6 +492,20 @@ export default function MediaTools() {
                 关于位深 / 采样率：从 16-bit / 44100 Hz 往上调并不会增加真实音频信息（MP3 等有损源丢失的部分也无法恢复），
                 只会让文件更大；高位深的真正价值在于混音处理（如 Audio Mixer）和保留高质量源。普通转换用 16-bit / 44100 Hz 就足够。
               </p>
+            </div>
+          )}
+
+          {TOOL_NOTES[selected.id] && (
+            <div
+              className="mb-6 flex items-start gap-3 p-3 rounded-xl border text-xs leading-relaxed"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                borderColor: 'var(--border)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              <span className="text-base leading-none">💡</span>
+              <p>{TOOL_NOTES[selected.id]}</p>
             </div>
           )}
 
