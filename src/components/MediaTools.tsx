@@ -49,6 +49,64 @@ function classifyOutputName(name: string): PreviewKind {
   return 'other';
 }
 
+function Waveform({ url, className }: { url: string; className?: string }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (!url || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    let audioCtx: AudioContext | null = null;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(url);
+        const buf = await res.arrayBuffer();
+        const AudioCtor =
+          window.AudioContext ??
+          (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        if (!AudioCtor) return;
+        audioCtx = new AudioCtor();
+        const audioBuf = await audioCtx.decodeAudioData(buf);
+        if (cancelled) return;
+        const data = audioBuf.getChannelData(0);
+        const w = canvas.width;
+        const h = canvas.height;
+        const step = Math.max(1, Math.floor(data.length / w));
+        const mid = h / 2;
+        const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#3b82f6';
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = accent;
+        for (let i = 0; i < w; i++) {
+          let min = 0;
+          let max = 0;
+          const start = i * step;
+          const end = Math.min(data.length, start + step);
+          for (let j = start; j < end; j++) {
+            const value = data[j];
+            if (value < min) min = value;
+            if (value > max) max = value;
+          }
+          const yTop = mid - max * mid;
+          const yBottom = mid - min * mid;
+          ctx.fillRect(i, yTop, 1, Math.max(1, yBottom - yTop));
+        }
+      } catch {
+        // 解码失败时静默降级，仍保留 <audio> 播放
+      } finally {
+        if (audioCtx) audioCtx.close().catch(() => undefined);
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (audioCtx) audioCtx.close().catch(() => undefined);
+    };
+  }, [url]);
+
+  return <canvas ref={canvasRef} width={640} height={80} className={className} />;
+}
+
 function OptionControl({
   option,
   value,
@@ -359,12 +417,15 @@ export default function MediaTools() {
                       style={{ colorScheme: 'light' }}
                     />
                   ) : previewKind === 'audio' ? (
-                    <audio
-                      controls
-                      src={previewUrl}
-                      className="w-full mb-2"
-                      style={{ colorScheme: 'light' }}
-                    />
+                    <div className="w-full mb-2">
+                      <Waveform url={previewUrl} className="w-full h-16 mb-1 rounded-lg" />
+                      <audio
+                        controls
+                        src={previewUrl}
+                        className="w-full"
+                        style={{ colorScheme: 'light' }}
+                      />
+                    </div>
                   ) : previewKind === 'image' ? (
                     <img src={previewUrl} alt="预览" className="w-28 h-28 object-contain rounded-lg mb-2" />
                   ) : (
@@ -410,7 +471,10 @@ export default function MediaTools() {
                 {file2 ? (
                   <div className="flex flex-col items-center gap-1" style={{ color: 'var(--text-primary)' }}>
                     {previewUrl2 && (
-                      <audio controls src={previewUrl2} className="w-full mb-1" style={{ colorScheme: 'light' }} />
+                      <div className="w-full mb-1">
+                        <Waveform url={previewUrl2} className="w-full h-16 mb-1 rounded-lg" />
+                        <audio controls src={previewUrl2} className="w-full" style={{ colorScheme: 'light' }} />
+                      </div>
                     )}
                     <div className="font-semibold">{file2.name}</div>
                     <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -568,7 +632,10 @@ export default function MediaTools() {
                           <img src={url} alt={result.names[index]} className="w-full max-h-72 object-contain rounded-lg" />
                         )}
                         {url && kind === 'audio' && (
-                          <audio controls src={url} className="w-full" style={{ colorScheme: 'light' }} />
+                          <div className="w-full">
+                            <Waveform url={url} className="w-full h-16 mb-1 rounded-lg" />
+                            <audio controls src={url} className="w-full" style={{ colorScheme: 'light' }} />
+                          </div>
                         )}
                         {url && kind === 'video' && (
                           <video controls src={url} className="w-full max-h-72 rounded-lg" style={{ backgroundColor: '#000', colorScheme: 'light' }} />
