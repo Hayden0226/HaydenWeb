@@ -710,7 +710,9 @@ export async function convertWithTool(
     return { blobs: [result.blob], outputNames: [`${baseNameOf(file.name)}.${result.outputExt}`] };
   }
 
-  const outputName = `${baseNameOf(file.name)}.${tool.outputExt}`;
+  const fmt = String(opts.format ?? '');
+  const ext = ['mp3', 'wav', 'ogg', 'flac'].includes(fmt) ? fmt : tool.outputExt;
+  const outputName = `${baseNameOf(file.name)}.${ext}`;
   const blob = await runFFmpeg({
     file,
     outputName,
