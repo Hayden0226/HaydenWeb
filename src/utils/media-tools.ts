@@ -316,7 +316,7 @@ export const MEDIA_TOOLS: MediaTool[] = [
     outputExt: 'gif',
     engine: 'ffmpeg',
     options: [
-      { key: 'fps', label: '帧率', type: 'number', min: 1, max: 50, step: 1, default: 50, hint: '每秒画面数。GIF 建议 10–30：太低会卡顿，过高容易卡顿且文件巨大。' },
+      { key: 'fps', label: '帧率', type: 'number', min: 1, max: 50, step: 1, default: 50, hint: '每秒画面数。太低会卡顿；超过约 30 对观感提升很小，文件与解码负担却成倍上涨、播放反而更卡。GIF 建议 10–30。' },
       { key: 'width', label: '宽度 (px)', type: 'number', min: 64, max: 3840, step: 16, default: 720, hint: '输出宽度，越小文件越小。4K 源建议 ≤1920，否则浏览器内存吃紧。' },
     ],
     buildArgs: (input, output, opts) => [

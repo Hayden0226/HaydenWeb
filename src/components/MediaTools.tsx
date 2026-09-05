@@ -235,6 +235,34 @@ const TOOL_TIPS: Record<string, string> = {
   'wav-to-mp3': '压缩有损且不可逆：编码后丢失的细节无法恢复，建议先保留原始 WAV 归档；码率也不必超过源文件实际质量——若源只是低码率音频，选 320 kbps 也不会让它变得更好。',
 };
 
+const TOOL_GUIDES: Record<string, { title: string; items: { lead: string; text: string }[] }> = {
+  'mp4-to-gif': {
+    title: 'GIF 科普：老格式，只为「到处能贴的动图」',
+    items: [
+      {
+        lead: '格式特性',
+        text: 'GIF 诞生于 1987 年：单帧最多 256 色、每帧都要完整保存、不会高效压缩视频。它适合短小的表情 / 演示片段，不适合长视频与高清画面。',
+      },
+      {
+        lead: '体积巨大',
+        text: '同样内容下，GIF 通常比 MP4 大数倍甚至十几倍；帧率、分辨率、时长任一拉高，体积都会快速膨胀。',
+      },
+      {
+        lead: '帧率建议',
+        text: '播放器按帧延迟播放 GIF（浏览器下限约 20ms ≈ 50fps，本工具上限即 50）。太低会明显卡顿，10–30 是常见区间；超过约 30 对观感提升很小，文件与解码负担却成倍上涨，播放反而更卡。',
+      },
+      {
+        lead: '只有 256 色',
+        text: '照片、天空渐变等连续色彩容易产生「色带」。本工具已用 palettegen / paletteuse 优化调色板来减轻色带，复杂画面仍可能出现肉眼可见的色块。',
+      },
+      {
+        lead: '实用建议',
+        text: '要清晰、体积小的动图，优先输出 MP4 / WebM；GIF 只在需要直接贴进聊天、论坛或旧设备时才值得转。',
+      },
+    ],
+  },
+};
+
 export default function MediaTools() {
   const [category, setCategory] = useState<Category>('audio');
   const [selected, setSelected] = useState<MediaTool | null>(null);
@@ -661,6 +689,29 @@ export default function MediaTools() {
               </div>
             );
           })()}
+
+          {TOOL_GUIDES[selected.id] && (
+            <div
+              className="mb-6 p-3 rounded-xl border text-xs leading-relaxed"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                borderColor: 'var(--border)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              <p className="flex items-center gap-1.5 font-semibold mb-1.5" style={{ color: 'var(--text-primary)' }}>
+                💡 {TOOL_GUIDES[selected.id].title}
+              </p>
+              <ul className="pl-4 space-y-1.5 list-disc">
+                {TOOL_GUIDES[selected.id].items.map((item, index) => (
+                  <li key={index}>
+                    <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{item.lead}：</span>
+                    {item.text}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {TOOL_NOTES[selected.id] && (
             <div
