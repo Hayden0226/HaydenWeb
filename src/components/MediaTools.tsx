@@ -607,27 +607,60 @@ export default function MediaTools() {
             </div>
           )}
 
-          {/* Bit depth / sample rate note */}
-          {selected.options?.some((option) => option.key === 'bitDepth') && (
-            <div
-              className="mb-6 flex items-start gap-3 p-3 rounded-xl border text-xs leading-relaxed"
-              style={{
-                backgroundColor: 'var(--bg-secondary)',
-                borderColor: 'var(--border)',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <span className="text-base leading-none">💡</span>
-              <div>
-                <p>
-                  关于位深 / 采样率：从 16-bit / 44100 Hz 往上调并不会增加真实音频信息，只会让文件更大；高位深的真正价值在于混音处理（如 Audio Mixer）和保留高质量源。普通转换用 16-bit / 44100 Hz 就足够。
-                </p>
-                <p className="mt-1 font-semibold" style={{ color: 'var(--text-primary)' }}>
-                  ⚠️ MP3 是有损格式，高频细节在被压缩那一刻就丢了；转 WAV 只是把剩下的数据「解包」成 PCM，丢失的信息不会回来。
-                </p>
+          {/* Audio bit depth / sample rate + lossy科普 */}
+          {(() => {
+            const sel = selected;
+            if (!sel || !sel.options?.some((option) => option.key === 'bitDepth')) return null;
+            const fmt = String(options.format ?? '');
+            const showBitDepth = fmt === 'wav' || fmt === 'flac' || !fmt;
+            const lossyTools = ['audio-cutter', 'audio-converter', 'video-to-audio', 'audio-mixer'];
+            const showLossy = lossyTools.includes(sel.id) && showBitDepth;
+            if (!showBitDepth && !showLossy) return null;
+            return (
+              <div
+                className="mb-6 p-3 rounded-xl border text-xs leading-relaxed"
+                style={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  borderColor: 'var(--border)',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                {showBitDepth && (
+                  <div>
+                    <p className="flex items-center gap-1.5 font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+                      💡 位深与采样率
+                    </p>
+                    <ul className="pl-4 space-y-1 list-disc">
+                      <li>
+                        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>位深</span>
+                        ：单个采样点的精度，越高越细腻。16-bit 已是 CD 标准；24/32-bit 动态范围更宽，但文件更大。
+                      </li>
+                      <li>
+                        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>采样率</span>
+                        ：每秒记录多少个采样点。44100 Hz 即 CD 标准；96000 / 192000 Hz 用于高解析度音频。
+                      </li>
+                      <li>
+                        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>实用结论</span>
+                        ：普通转换用 16-bit / 44100 Hz 就足够，再往上调不会增加真实音频信息，只会让文件更大；高位深的真正价值在于混音处理（如 Audio Mixer）与归档高质量母带。
+                      </li>
+                    </ul>
+                  </div>
+                )}
+                {showLossy && (
+                  <div className={showBitDepth ? 'mt-2.5 pt-2.5 border-t' : ''} style={{ borderColor: 'var(--border)' }}>
+                    <p className="flex items-center gap-1.5 font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+                      ⚠️ 有损转无损 ≠ 音质提升
+                    </p>
+                    <ul className="pl-4 space-y-1 list-disc">
+                      <li>MP3 / AAC / OGG 等有损格式在压缩那一刻就丢掉了高频细节，丢失的信息永远不会回来。</li>
+                      <li>把它们转成 WAV / FLAC 只是把「剩余数据」解包成 PCM：体积会大很多，听感却不会变好。</li>
+                      <li>低码率 MP3（如 128 kbps）转出的无损文件属于「大而无当」，只在需要统一格式 / 兼容旧设备时才值得转。</li>
+                    </ul>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {TOOL_NOTES[selected.id] && (
             <div
