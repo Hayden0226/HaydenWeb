@@ -361,6 +361,31 @@ const TOOL_GUIDES: Record<string, { title: string; items: { lead: string; text: 
       },
     ],
   },
+  'jpg-to-webp': {
+    title: 'JPG → WebP：更小的照片格式',
+    items: [
+      {
+        lead: 'WebP 是什么',
+        text: 'Google 的现代图片格式，支持有损 / 无损压缩、也能带透明；同等画质下体积通常比 JPG 更小，尤其适合网页图片。',
+      },
+      {
+        lead: '有损转有损',
+        text: 'JPG 本身已是有损压缩，转成 WebP 属于「有损再压缩」：画质不会变好，但通常能进一步减小体积；细节已丢失的部分不会回来。',
+      },
+      {
+        lead: '质量参数',
+        text: '本工具用有损 WebP 并支持调质量：越接近 1 越清晰、文件越大；照片建议适中（如 0.8 左右）在体积与画质间平衡。',
+      },
+      {
+        lead: '兼容性提示',
+        text: '现代浏览器（Chrome / Edge / Firefox / Safari 14+）普遍支持；老系统看图器、部分编辑 / 打印软件可能打不开，需要兼容可保留 JPG 或转 PNG。',
+      },
+      {
+        lead: '实用建议',
+        text: '网页照片、图库素材优先转 WebP 来压缩体积；若用于打印或老设备，保留 JPG 更保险。',
+      },
+    ],
+  },
 };
 
 export default function MediaTools() {
