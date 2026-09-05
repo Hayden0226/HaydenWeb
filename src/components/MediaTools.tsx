@@ -481,6 +481,47 @@ const TOOL_GUIDES: Record<string, { title: string; items: { lead: string; text: 
   },
 };
 
+const FORMAT_GUIDES: Record<string, { title: string; items: { lead: string; text: string }[] }> = {
+  ogg: {
+    title: 'OGG 输出：Vorbis 编码是什么',
+    items: [
+      {
+        lead: 'OGG 是容器',
+        text: 'OGG 只负责打包音频数据；真正压缩声音的是装在里面的有损编码——这里就是 Vorbis。',
+      },
+      {
+        lead: 'Vorbis 特点',
+        text: '开源、免专利费，同码率下通常比 MP3 略小、听感更稳，适合开源生态与移动端（尤其安卓）。',
+      },
+      {
+        lead: '有损转有损',
+        text: '源如果是 MP3 等有损格式，转 OGG 只是重新编码一次，听感不会变好，体积可能再小些。',
+      },
+      {
+        lead: '兼容性',
+        text: 'Windows / Android / 开源播放器都支持；苹果设备（iPhone / iTunes）原生不支持 OGG。',
+      },
+    ],
+  },
+  mp3: {
+    title: 'MP3 输出：最通用的有损格式',
+    items: [
+      {
+        lead: 'MP3 是什么',
+        text: '最普及的有损格式，几乎所有设备、平台原生支持，适合日常聆听与网络分享。',
+      },
+      {
+        lead: '码率与音质',
+        text: '码率越高音质越好、文件越大。320 kbps 已是 MP3 上限；192 在体积与音质间平衡；128 适合低码率网络传输。',
+      },
+      {
+        lead: '有损压缩',
+        text: 'MP3 依靠人耳掩蔽效应去掉不易察觉的细节来压缩体积，编码后丢失的部分无法恢复。',
+      },
+    ],
+  },
+};
+
 export default function MediaTools() {
   const [category, setCategory] = useState<Category>('audio');
   const [selected, setSelected] = useState<MediaTool | null>(null);
@@ -910,28 +951,37 @@ export default function MediaTools() {
             );
           })()}
 
-          {TOOL_GUIDES[selected.id] && (
-            <div
-              className="mb-6 p-3 rounded-xl border text-xs leading-relaxed"
-              style={{
-                backgroundColor: 'var(--bg-secondary)',
-                borderColor: 'var(--border)',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <p className="flex items-center gap-1.5 font-semibold mb-1.5" style={{ color: 'var(--text-primary)' }}>
-                💡 {TOOL_GUIDES[selected.id].title}
-              </p>
-              <ul className="pl-4 space-y-1.5 list-disc">
-                {TOOL_GUIDES[selected.id].items.map((item, index) => (
-                  <li key={index}>
-                    <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{item.lead}：</span>
-                    {item.text}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {(() => {
+            const sel = selected;
+            if (!sel) return null;
+            const formatGuide = sel.options?.some((option) => option.key === 'format')
+              ? FORMAT_GUIDES[String(options.format ?? '')]
+              : undefined;
+            const guide = formatGuide ?? TOOL_GUIDES[sel.id];
+            if (!guide) return null;
+            return (
+              <div
+                className="mb-6 p-3 rounded-xl border text-xs leading-relaxed"
+                style={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  borderColor: 'var(--border)',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                <p className="flex items-center gap-1.5 font-semibold mb-1.5" style={{ color: 'var(--text-primary)' }}>
+                  💡 {guide.title}
+                </p>
+                <ul className="pl-4 space-y-1.5 list-disc">
+                  {guide.items.map((item, index) => (
+                    <li key={index}>
+                      <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{item.lead}：</span>
+                      {item.text}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })()}
 
           {TOOL_NOTES[selected.id] && (
             <div
