@@ -336,6 +336,31 @@ const TOOL_GUIDES: Record<string, { title: string; items: { lead: string; text: 
       },
     ],
   },
+  'webm-to-mp4': {
+    title: 'WebM → MP4：为什么要转，以及 H.264 / AAC',
+    items: [
+      {
+        lead: 'MP4 是什么',
+        text: 'MP4 是最通用的视频容器：视频用 H.264、音频用 AAC（本工具即此组合），几乎被所有设备、浏览器、社交与视频平台原生支持。',
+      },
+      {
+        lead: '为什么转',
+        text: 'WebM / VP9 在老浏览器、较旧 iOS / Safari 以及部分设备上支持较差；转成 H.264 后基本「谁都能播」，适合发给别人、上传平台或投屏。',
+      },
+      {
+        lead: '画质与体积',
+        text: 'H.264 在同等画质下体积通常略大于 VP9。若源 WebM 码率不高，转完体积可能稍涨，这是为兼容性付出的代价。',
+      },
+      {
+        lead: '有损转有损',
+        text: 'VP9 视频、Opus 音频都是已经压缩过的有损数据，再编成 H.264 / AAC 仍是有损转有损：画质不会变好，只会因二次压缩稍有损耗。',
+      },
+      {
+        lead: '实用建议',
+        text: '需要到处分享 / 播放时就转 MP4；若只是自己站点内嵌且浏览器都较新，保留 WebM 体积更优。',
+      },
+    ],
+  },
 };
 
 export default function MediaTools() {
