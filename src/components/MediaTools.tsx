@@ -618,18 +618,20 @@ export default function MediaTools() {
                   return true;
                 })
                 .map((option) => (
-                <label key={option.key} className="block">
+                <label key={option.key} className="flex flex-col">
                   <span className="text-sm block mb-1" style={{ color: 'var(--text-secondary)' }}>{option.label}</span>
                   {option.hint && (
                     <span className="block mb-1 text-xs leading-snug" style={{ color: 'var(--text-secondary)', opacity: 0.75 }}>
                       {option.hint}
                     </span>
                   )}
-                  <OptionControl
-                    option={option}
-                    value={options[option.key]}
-                    onChange={(next) => setOptions((prev) => ({ ...prev, [option.key]: next }))}
-                  />
+                  <div className="mt-auto">
+                    <OptionControl
+                      option={option}
+                      value={options[option.key]}
+                      onChange={(next) => setOptions((prev) => ({ ...prev, [option.key]: next }))}
+                    />
+                  </div>
                 </label>
                 ))}
             </div>
