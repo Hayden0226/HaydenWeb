@@ -551,6 +551,27 @@ const TOOL_GUIDES: Record<string, { title: string; items: { lead: string; text: 
       },
     ],
   },
+  'gif-to-png': {
+    title: 'GIF → PNG：取第一帧做什么',
+    items: [
+      {
+        lead: '工具作用',
+        text: '从 GIF 动图里取出第一帧，保存为 PNG 静态图，适合做缩略图、封面或静态展示。',
+      },
+      {
+        lead: '为什么是 PNG',
+        text: 'PNG 无损、支持透明，能保留 GIF 里的透明区域，适合图标、素材与需要再编辑的场合。',
+      },
+      {
+        lead: '只取第一帧',
+        text: 'GIF 是多帧动图，本工具固定取第一帧；想要所有帧或中间帧，可用 Video → Images 之类按帧抽图。',
+      },
+      {
+        lead: '画质提醒',
+        text: '帧画面来自 GIF，仍只有 256 色；转成 PNG 不会变清晰，只是无损保存这个画面。',
+      },
+    ],
+  },
 };
 
 const FORMAT_GUIDES: Record<string, { title: string; items: { lead: string; text: string }[] }> = {
