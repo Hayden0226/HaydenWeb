@@ -572,6 +572,31 @@ const TOOL_GUIDES: Record<string, { title: string; items: { lead: string; text: 
       },
     ],
   },
+  'image-cropper': {
+    title: 'Image Cropper：居中裁剪前先了解',
+    items: [
+      {
+        lead: '它在做什么',
+        text: '按你设定的画布宽高，把图片边缘裁掉、只保留中心区域，再输出为一张新图。',
+      },
+      {
+        lead: '为什么是居中',
+        text: '本工具固定从中心裁剪，无法手动选位置；适合统一生成封面、卡片、头像等需要固定比例的素材，但主体不在中心时可能被裁掉。',
+      },
+      {
+        lead: '宽高怎么设',
+        text: '输出宽高决定结果尺寸与比例。设得比原图小=裁剪；设得比原图大=放大（只是插值，不会更清晰）。建议按需要的比例（如 1:1、16:9）直接给尺寸。',
+      },
+      {
+        lead: '格式与质量',
+        text: 'JPEG 通用、体积适中；WebP 体积更小；PNG 无损、支持透明。有损格式（JPEG / WebP）质量越接近 1 越清晰、文件越大。',
+      },
+      {
+        lead: '实用建议',
+        text: '先确认主体大致在中心再裁；裁剪是破坏性的，裁掉的边缘无法恢复，建议留一份原图。',
+      },
+    ],
+  },
 };
 
 const FORMAT_GUIDES: Record<string, { title: string; items: { lead: string; text: string }[] }> = {
