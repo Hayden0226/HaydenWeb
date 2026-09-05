@@ -311,6 +311,31 @@ const TOOL_GUIDES: Record<string, { title: string; items: { lead: string; text: 
       },
     ],
   },
+  'png-to-webp': {
+    title: 'PNG → WebP：现代网页图片格式',
+    items: [
+      {
+        lead: 'WebP 是什么',
+        text: 'Google 推出的现代图片格式，同时支持有损与无损压缩，还能带透明通道，同等画质下体积通常比 JPG / PNG 更小。',
+      },
+      {
+        lead: '有损 / 无损',
+        text: '有损 WebP 类似 JPG，适合照片；无损 WebP 类似 PNG 且支持透明，适合图标、截图、UI 素材。本工具可调质量：越接近 1 越清晰、文件越大。',
+      },
+      {
+        lead: '为何更适合网页',
+        text: '体积小就能加快网页加载、节省流量，现代浏览器（Chrome / Edge / Firefox / Safari 14+）普遍原生支持。',
+      },
+      {
+        lead: '兼容性提示',
+        text: '旧版浏览器、老系统内置图片查看器以及部分编辑 / 打印软件支持有限；需要极致兼容时可用 PNG 或 JPG 兜底。',
+      },
+      {
+        lead: '实用建议',
+        text: '网页素材优先转 WebP；若源图是照片选有损（质量适中即可），图标 / UI 建议用无损或高质量。',
+      },
+    ],
+  },
 };
 
 export default function MediaTools() {
