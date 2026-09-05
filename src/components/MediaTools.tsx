@@ -286,6 +286,31 @@ const TOOL_GUIDES: Record<string, { title: string; items: { lead: string; text: 
       },
     ],
   },
+  'mp4-to-webm': {
+    title: 'MP4 → WebM：VP9 与 Opus 是什么',
+    items: [
+      {
+        lead: 'WebM 容器',
+        text: 'WebM 是面向网页的开源容器（源自 Matroska），视频用 VP9、音频用 Opus，浏览器原生支持、无需插件，适合网页嵌入与流媒体。',
+      },
+      {
+        lead: 'VP9 视频编码',
+        text: 'Google 开源、免专利费，同码率下通常比 H.264 更清晰、体积更小，尤其适合高分辨率画面；代价是编码更慢、内存占用更高。',
+      },
+      {
+        lead: 'Opus 音频编码',
+        text: '开源高压缩音频编码，比 AAC / MP3 更高效，对语音与低码率场景表现尤其好，码率越低优势越明显。',
+      },
+      {
+        lead: '兼容性提醒',
+        text: '老浏览器与部分设备（尤其较旧 iOS / Safari）可能不支持 VP9；要最大程度兼容各平台，建议保留 MP4（H.264）。',
+      },
+      {
+        lead: '实用建议',
+        text: 'WebM 适合自己站点 / 博客内嵌、开源与无版权顾虑的场景；追求「谁都能播」时选 MP4 更稳妥。',
+      },
+    ],
+  },
 };
 
 export default function MediaTools() {
