@@ -261,6 +261,31 @@ const TOOL_GUIDES: Record<string, { title: string; items: { lead: string; text: 
       },
     ],
   },
+  'gif-to-mp4': {
+    title: 'GIF → MP4：为什么转成 MP4 通常更合适',
+    items: [
+      {
+        lead: '编码优势',
+        text: 'MP4 用 H.264（本工具即 H.264 + AAC）高效压缩视频，同样内容体积通常比 GIF 小数倍，画质也更稳定，浏览器、手机、社交平台普遍能放。',
+      },
+      {
+        lead: '色彩更多',
+        text: 'MP4 支持全彩，不再受 GIF 的 256 色限制；但源 GIF 本身只有 256 色，转 MP4 只是「无损搬进新容器」，不会凭空补回丢失的颜色。',
+      },
+      {
+        lead: '帧率如实',
+        text: 'GIF 每帧完整保存、帧率通常不高，转 MP4 只是按原 GIF 的帧画面编码，不会让它变得更流畅；想要顺滑动画，最好回到源视频重新导出。',
+      },
+      {
+        lead: '透明背景',
+        text: 'GIF 若有透明背景，转 MP4 时透明部分会被填成纯色（通常是黑底或白底）。需要保留透明请输出 WebM，或用 PNG 序列。',
+      },
+      {
+        lead: '实用建议',
+        text: '把 GIF 转成 MP4 适合存档、发到聊天 / 视频平台、投屏展示；若源 GIF 画质一般，转完依旧是那个画质，不会变清晰。',
+      },
+    ],
+  },
 };
 
 export default function MediaTools() {
