@@ -218,7 +218,6 @@ function OptionControl({
 }
 
 const TOOL_NOTES: Record<string, string> = {
-  'mp3-to-ogg': 'OGG 是「容器格式」，Vorbis 才是装在里面的有损压缩编码（类似 MP3，开源无专利费）。同码率下听感通常略优于 MP3、体积更小；但苹果设备（iPhone / iTunes）原生不支持播放。注意这是有损转有损，音质不会变好，只是换成更高效的格式。',
   'mp3-to-wav': 'MP3 是有损格式，高频细节在压缩那一刻就丢了；转 WAV 只是把剩下的数据「解包」成 PCM，丢失的信息不会回来，体积却会大很多。若源文件是低码率 MP3（如 128kbps），转出的 WAV 也只是「大而无当」。把位深 / 采样率调到 16-bit / 44100 Hz 以上并不会增加真实信息，只会让文件更大。',
   'wav-to-mp3': 'WAV 存的是未压缩的 PCM 原始采样数据：CD 音质约 1411 kbps，一分钟约 10 MB；MP3 利用人耳听觉的掩蔽效应做有损压缩，去掉不易察觉的细节来大幅缩小体积。WAV → MP3 是真正的「压缩」：320 kbps 的 MP3 体积通常只有 WAV 的四分之一左右，绝大多数设备上听感与源文件几乎无异，适合日常聆听和网络分享。',
   'wav-to-flac': 'WAV 存的是未压缩的 PCM 原始采样数据，体积巨大；FLAC 是无损压缩（类似音频版 ZIP），解压后与原 WAV 逐位一致、音质零损失。它和 MP3 / OGG 那种有损不同：WAV → FLAC 音质完全不变、体积约省一半，适合归档收藏。位深 / 采样率升格不会增加真实信息，只会让文件更大。',
@@ -452,6 +451,31 @@ const TOOL_GUIDES: Record<string, { title: string; items: { lead: string; text: 
       {
         lead: '实用建议',
         text: '网页 / 聊天发送用 23–28；想留素材或继续剪辑就用 18–20 保质量。',
+      },
+    ],
+  },
+  'mp3-to-ogg': {
+    title: 'MP3 → OGG：说说 Vorbis 编码',
+    items: [
+      {
+        lead: 'OGG 是容器',
+        text: 'OGG 只是「打包盒」，不负责压缩；真正干活的是装在里面、类似 MP3 的有损编码——这里就是 Vorbis。',
+      },
+      {
+        lead: 'Vorbis 特点',
+        text: '开源、免专利费，同码率下通常比 MP3 略小、听感更稳，适合想摆脱专利限制、或偏开源生态的场景。',
+      },
+      {
+        lead: '有损转有损',
+        text: 'MP3 本来就是有损，转 OGG 是「重新编码一次」，听感不会变好；它更像换了个更高效的编码，体积可能再小一点。',
+      },
+      {
+        lead: '兼容性提醒',
+        text: 'Windows、Android、大多开源播放器都支持；苹果设备（iPhone / iTunes）原生不支持播放 OGG，介意的话用 MP3 或 AAC。',
+      },
+      {
+        lead: '实用建议',
+        text: '想在 Android / 开源设备上省点空间、且不涉及苹果就转 OGG；反之继续保持 MP3 / AAC 用途更广。',
       },
     ],
   },
