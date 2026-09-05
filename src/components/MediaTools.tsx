@@ -386,6 +386,27 @@ const TOOL_GUIDES: Record<string, { title: string; items: { lead: string; text: 
       },
     ],
   },
+  'webp-to-png': {
+    title: 'WebP → PNG：无损输出与用途',
+    items: [
+      {
+        lead: '无损失真',
+        text: 'PNG 的「无损」指解码后逐像素保存原始数据。WebP 若本来就是无损，转 PNG 不会有损失；若是之前有损压缩过的，丢失的细节也不会回来。',
+      },
+      {
+        lead: 'PNG 特点',
+        text: 'PNG 无损、支持透明通道、几乎被所有编辑与查看软件支持，适合图标、截图、文字、UI 素材以及需要再编辑的场景。',
+      },
+      {
+        lead: '体积更大',
+        text: 'PNG 面向无损，通常比 WebP 大得多，尤其是照片与渐变画面；这是为了「通用 + 无损」付出的体积代价。',
+      },
+      {
+        lead: '何时适合转',
+        text: '需要交给老软件编辑、打印、投稿，或要保留透明并要求无损时，PNG 更稳妥；单纯为了网页压缩则应继续用 WebP。',
+      },
+    ],
+  },
 };
 
 export default function MediaTools() {
