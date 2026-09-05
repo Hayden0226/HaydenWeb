@@ -220,6 +220,7 @@ function OptionControl({
 const TOOL_NOTES: Record<string, string> = {
   'mp3-to-ogg': 'OGG 是「容器格式」，Vorbis 才是装在里面的有损压缩编码（类似 MP3，开源无专利费）。同码率下听感通常略优于 MP3、体积更小；但苹果设备（iPhone / iTunes）原生不支持播放。注意这是有损转有损，音质不会变好，只是换成更高效的格式。',
   'mp3-to-wav': 'MP3 是有损格式，高频细节在压缩那一刻就丢了；转 WAV 只是把剩下的数据「解包」成 PCM，丢失的信息不会回来，体积却会大很多。若源文件是低码率 MP3（如 128kbps），转出的 WAV 也只是「大而无当」。把位深 / 采样率调到 16-bit / 44100 Hz 以上并不会增加真实信息，只会让文件更大。',
+  'wav-to-mp3': 'WAV 存的是未压缩的 PCM 原始采样数据：CD 音质约 1411 kbps，一分钟约 10 MB；MP3 利用人耳听觉的掩蔽效应做有损压缩，去掉不易察觉的细节来大幅缩小体积。WAV → MP3 是真正的「压缩」：320 kbps 的 MP3 体积通常只有 WAV 的四分之一左右，绝大多数设备上听感与源文件几乎无异，适合日常聆听和网络分享。',
   'wav-to-flac': 'WAV 存的是未压缩的 PCM 原始采样数据，体积巨大；FLAC 是无损压缩（类似音频版 ZIP），解压后与原 WAV 逐位一致、音质零损失。它和 MP3 / OGG 那种有损不同：WAV → FLAC 音质完全不变、体积约省一半，适合归档收藏。位深 / 采样率升格不会增加真实信息，只会让文件更大。',
   'jpg-to-png': 'JPG 是有损格式，适合照片，但压缩会丢失细节，文字 / 线条 / 大面积纯色处容易出现块状伪影；PNG 是无损格式、支持透明通道，适合截图、图标与文字。JPG → PNG 不会让模糊的图变清晰——有损信息早已丢失，只是换了个无损「箱子」、文件通常更大，也无法凭空补出透明背景。',
   'png-to-jpg': 'PNG 是无损格式、支持透明通道，适合截图 / 文字 / 图标；JPG 是有损格式、不支持透明，适合照片。PNG → JPG 会把透明区域变成白色，并因有损压缩引入伪影：文字、线条、UI 截图转后边缘易发糊，照片类原图则几乎看不出差别。质量越低体积越小，但细节丢失越多。',
@@ -228,6 +229,10 @@ const TOOL_NOTES: Record<string, string> = {
   'video-compressor': '注意：CRF 越小越清晰、文件越大。默认 18 接近无损，压缩效果很小；要真正压缩请调到 23–28（体积明显减小，画质仍可接受）。',
   'image-compressor': '注意：质量设为 1（100%）时压缩几乎不生效，体积基本不变。要真正减小体积，请调低质量或选择 WebP。',
   'video-to-images': '注意：默认最多 500 帧会打包成很大的 ZIP。长视频建议把帧数调小（如 30–60），或选 JPG 减小体积。',
+};
+
+const TOOL_TIPS: Record<string, string> = {
+  'wav-to-mp3': '压缩有损且不可逆：编码后丢失的细节无法恢复，建议先保留原始 WAV 归档；码率也不必超过源文件实际质量——若源只是低码率音频，选 320 kbps 也不会让它变得更好。',
 };
 
 export default function MediaTools() {
@@ -634,7 +639,14 @@ export default function MediaTools() {
               }}
             >
               <span className="text-base leading-none">💡</span>
-              <p>{TOOL_NOTES[selected.id]}</p>
+              <div>
+                <p>{TOOL_NOTES[selected.id]}</p>
+                {TOOL_TIPS[selected.id] && (
+                  <p className="mt-1 font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    ⚠️ {TOOL_TIPS[selected.id]}
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
